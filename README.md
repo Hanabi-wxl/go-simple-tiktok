@@ -10,6 +10,7 @@
 │  │  ├─core 实现类
 │  │  ├─dal 数据库操作
 │  │  │  └─db 类似java mapper持久层
+│  │  ├─model 数据库实体对象
 │  │  ├─pack 封装对象
 │  │  └─service 放置proto生成的代码
 │  ├─idl proto文件
@@ -20,6 +21,7 @@
 │  │  ├─core
 │  │  ├─dal
 │  │  │  └─db
+│  │  ├─model
 │  │  ├─pack
 │  │  └─service
 │  ├─idl
@@ -39,17 +41,19 @@
 │  └─pkg 其它可供全局访问的代码
 │      ├─consts 常量、配置
 │      ├─result 结果类、异常类
+│      ├─sql 数据库结构文件
 │      └─utils 工具包
 └─relation 社交模块
-├─cmd
-│  ├─core
-│  ├─dal
-│  │  └─db
-│  ├─pkg
-│  └─service
-├─idl
-└─pkg
-└─consts
+  ├─cmd
+  │  ├─core
+  │  ├─dal
+  │  │  └─db
+  │  ├─model
+  │  ├─pkg
+  │  └─service
+  ├─idl
+  └─pkg
+    └─consts
 ```
 
 ### Sample

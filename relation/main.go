@@ -5,11 +5,13 @@ import (
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/etcd"
 	"relation/cmd/core"
+	"relation/cmd/dal"
 	"relation/cmd/service"
 	"relation/pkg/consts"
 )
 
 func main() {
+	dal.Init()
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(consts.ETCDAddr),
 	)
