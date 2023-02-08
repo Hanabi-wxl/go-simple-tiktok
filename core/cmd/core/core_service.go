@@ -19,6 +19,7 @@ func (*CoreService) Feed(ctx context.Context, req *service.DouyinFeedRequest, re
 		videoInfo  model.VideoInfo
 		author     model.Author
 		lastTime   int64
+		userId     int64
 	)
 	// 时间戳
 	lastTime = req.GetLatestTime()
@@ -26,7 +27,9 @@ func (*CoreService) Feed(ctx context.Context, req *service.DouyinFeedRequest, re
 	timeTime := time.UnixMilli(lastTime)
 	token := req.GetToken()
 	claims, _ := utils.ParseToken(token)
-	userId := claims.UserId
+	if claims != nil {
+		userId = claims.UserId
+	}
 	// 获取视频列表及时间戳
 	videos, lastTime = db.FeedVideos(timeTime)
 	for _, video := range videos {

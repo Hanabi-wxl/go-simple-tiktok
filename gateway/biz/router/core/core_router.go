@@ -9,7 +9,7 @@ import (
 func Register(engin *gin.Engine) {
 	douyin := engin.Group("/douyin")
 	{
-		douyin.GET("/feed/", mw.JWT(), handler.Feed)
+		douyin.GET("/feed/", handler.Feed)
 
 		user := douyin.Group("/user")
 		{
