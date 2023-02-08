@@ -8,6 +8,7 @@ require (
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.5
+	gorm.io/plugin/soft_delete v1.2.0
 )
 
 require (

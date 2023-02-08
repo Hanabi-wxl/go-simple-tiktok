@@ -2,7 +2,8 @@
 SQLyog Ultimate v12.09 (64 bit)
 MySQL - 8.0.23 : Database - simple_tiktok
 *********************************************************************
-*/
+*/
+
 
 /*!40101 SET NAMES utf8 */;
 
@@ -76,7 +77,7 @@ DROP TABLE IF EXISTS `user`;
 
 CREATE TABLE `user` (
   `user_id` int NOT NULL,
-  `password` varchar(32) DEFAULT NULL,
+  `password` varchar(64) DEFAULT NULL,
   `name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `user_id` (`user_id`)

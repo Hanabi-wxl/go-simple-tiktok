@@ -2,9 +2,15 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"gateway/biz/service"
 	"gateway/pkg/consts"
+	"gateway/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"path/filepath"
+	"strconv"
+	"time"
 )
 
 // Feed
@@ -13,18 +19,27 @@ import (
 // @param ginCtx
 func Feed(ginCtx *gin.Context) {
 	var feedReq service.DouyinFeedRequest
-	// 参数绑定
-	err := ginCtx.Bind(&feedReq)
-	if err != nil {
-		// 异常结果返回
-		SendResponse(ginCtx, consts.ParamErr, nil)
+	var latestTime int64
+	latestTimeStr := ginCtx.Query("latest_time")
+	if len(latestTimeStr) == 1 || len(latestTimeStr) == 0 {
+		latestTime = time.Now().UnixMilli()
+	} else {
+		atoi, _ := strconv.Atoi(latestTimeStr)
+		latestTime = int64(atoi)
 	}
+	token := ginCtx.Query(consts.AuthorizationKey)
+	feedReq.LatestTime = &latestTime
+	feedReq.Token = &token
 	// 获取core服务
 	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
 	// 调用服务
-	response, err := coreService.Feed(context.Background(), &feedReq)
+	response, err := coreService.Feed(ginCtx, &feedReq)
+	if err != nil {
+		SendServiceErr(ginCtx, err)
+		return
+	}
 	// 返回结果
-	ginCtx.JSON(consts.SuccessCode, response)
+	ginCtx.JSON(http.StatusOK, response)
 }
 
 // Register
@@ -36,13 +51,16 @@ func Register(ginCtx *gin.Context) {
 	username := ginCtx.Query("username")
 	password := ginCtx.Query("password")
 	regReq.Username = &username
-	regReq.Username = &password
+	regReq.Password = &password
 	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
 	response, err := coreService.UserRegister(context.Background(), &regReq)
 	if err != nil {
-		SendResponse(ginCtx, consts.ParamErr, nil)
+		SendServiceErr(ginCtx, err)
+		return
 	}
-	ginCtx.JSON(consts.SuccessCode, response)
+	token, _ := utils.GenerateToken(response.GetUserId())
+	response.Token = &token
+	ginCtx.JSON(http.StatusOK, response)
 }
 
 // Login
@@ -50,7 +68,20 @@ func Register(ginCtx *gin.Context) {
 // @auth sinre 2023-02-07 16:46:53
 // @param ginCtx
 func Login(ginCtx *gin.Context) {
-
+	var loginReq service.DouyinUserLoginRequest
+	username := ginCtx.Query("username")
+	password := ginCtx.Query("password")
+	loginReq.Username = &username
+	loginReq.Password = &password
+	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
+	response, err := coreService.UserLogin(context.Background(), &loginReq)
+	if err != nil {
+		SendServiceErr(ginCtx, err)
+		return
+	}
+	token, _ := utils.GenerateToken(response.GetUserId())
+	response.Token = &token
+	ginCtx.JSON(http.StatusOK, response)
 }
 
 // User
@@ -58,7 +89,23 @@ func Login(ginCtx *gin.Context) {
 // @auth sinre 2023-02-07 18:08:08
 // @param ginCtx
 func User(ginCtx *gin.Context) {
-
+	var userReq service.DouyinUserRequest
+	uid, err := strconv.Atoi(ginCtx.Query("user_id"))
+	if err != nil {
+		SendClientErr(ginCtx, consts.ParamErr)
+		return
+	}
+	userId := int64(uid)
+	token := ginCtx.Query(consts.AuthorizationKey)
+	userReq.UserId = &userId
+	userReq.Token = &token
+	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
+	response, err := coreService.User(context.Background(), &userReq)
+	if err != nil {
+		SendServiceErr(ginCtx, err)
+		return
+	}
+	ginCtx.JSON(http.StatusOK, response)
 }
 
 // PublishAction
@@ -66,7 +113,53 @@ func User(ginCtx *gin.Context) {
 // @auth sinre 2023-02-07 16:47:18
 // @param ginCtx
 func PublishAction(ginCtx *gin.Context) {
+	title := ginCtx.PostForm("title")
+	token := ginCtx.PostForm(consts.AuthorizationKey)
+	file, err := ginCtx.FormFile("data")
+	if err != nil {
+		SendClientErr(ginCtx, consts.PostFormVideoErr)
+		return
+	}
+	suffix := filepath.Ext(file.Filename)
+	//判断是否为视频格式
+	if _, ok := consts.VideoTypeMap[suffix]; !ok {
+		SendClientErr(ginCtx, consts.VideoTypeErrErr)
+	}
+	// 暂定使用uuid作为文件名
+	name := utils.NewFileName()
+	filename := name + suffix
+	savePath := filepath.Join("./static", filename)
+	err = ginCtx.SaveUploadedFile(file, savePath)
+	if err != nil {
+		SendClientErr(ginCtx, consts.SaveFileTempErr)
+	}
+	// 截取封面
+	err = utils.Capture(name, true)
+	if err != nil {
+		SendClientErr(ginCtx, consts.VideoCaptureErr)
+	}
+	claims, _ := utils.ParseToken(token)
+	mapData := map[string]interface{}{
+		"Author": map[string]int64{
+			"Id": claims.UserId,
+		},
+		"play_url":  utils.GetFileUrl(filename),
+		"cover_url": utils.GetFileUrl(name + ".jpg"),
+	}
 
+	bytes, _ := json.Marshal(mapData)
+	var pubReq service.DouyinPublishActionRequest
+	pubReq.Title = &title
+	pubReq.Token = &token
+	pubReq.Data = bytes
+
+	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
+	response, err := coreService.PublishAction(context.Background(), &pubReq)
+	if err != nil {
+		SendServiceErr(ginCtx, err)
+		return
+	}
+	ginCtx.JSON(http.StatusOK, response)
 }
 
 // PublishList

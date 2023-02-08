@@ -33,7 +33,7 @@ func main() {
 		micro.Name(consts.RelationClientName),
 		micro.WrapClient(wrappers.NewActionWrapper),
 	)
-	relationService := service.NewActionService(consts.RelationServiceName, relationMicroService.Client())
+	relationService := service.NewRelationService(consts.RelationServiceName, relationMicroService.Client())
 
 	//创建微服务实例，使用gin暴露http接口并注册到etcd
 	server := web.NewService(

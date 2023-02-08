@@ -16,6 +16,8 @@
 │  ├─idl proto文件
 │  └─pkg 其它可供全局访问的代码
 │      └─consts 常量、配置
+│      ├─errno 异常信息
+│      └─utils 工具包
 ├─core 基础模块
 │  ├─cmd
 │  │  ├─core
@@ -27,7 +29,10 @@
 │  ├─idl
 │  └─pkg
 │      └─consts
+│      ├─errno
+│      └─utils
 ├─gateway 网关 （gin）
+│  ├─lib 二进制可执行文件
 │  ├─biz  类似java src文件夹
 │  │  ├─handler 接口处理函数
 │  │  ├─router 总路由
@@ -39,10 +44,11 @@
 │  ├─idl proto文件
 │  ├─mw 全局中间件
 │  └─pkg 其它可供全局访问的代码
-│      ├─consts 常量、配置
-│      ├─result 结果类、异常类
-│      ├─sql 数据库结构文件
-│      └─utils 工具包
+│  │  ├─consts 常量、配置
+│  │  ├─result 结果类、异常类
+│  │  ├─sql 数据库结构文件
+│  │  └─utils 工具包
+│  └─static 静态资源文件
 └─relation 社交模块
   ├─cmd
   │  ├─core

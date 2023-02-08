@@ -12,12 +12,11 @@ func ErrorMiddleware() gin.HandlerFunc {
 		defer func() {
 			if r := recover(); r != nil {
 				err := r.(error)
-				var globalError result.GlobalError
-				_ = json.Unmarshal([]byte(err.Error()), &globalError)
-				context.JSON(int(globalError.Code), gin.H{
-					"code": globalError.Code,
-					"msg":  globalError.Detail,
-					"data": nil,
+				var serviceError result.ServiceError
+				_ = json.Unmarshal([]byte(err.Error()), &serviceError)
+				context.JSON(int(serviceError.Code), gin.H{
+					"status_code": serviceError.Code,
+					"status_msg":  serviceError.Detail,
 				})
 				context.Abort()
 			}
