@@ -19,9 +19,8 @@ func Register(engin *gin.Engine) {
 		}
 
 		publish := douyin.Group("/publish")
-		publish.Use(mw.JWT())
 		{
-			publish.POST("/action/", handler.PublishAction)
+			publish.POST("/action/", mw.JWT(), handler.PublishAction)
 			publish.GET("/list/", handler.PublishList)
 		}
 	}

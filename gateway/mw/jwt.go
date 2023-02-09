@@ -6,10 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type token struct {
-	Token string `json:"token"`
-}
-
 // JWT token验证中间件
 func JWT() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
@@ -17,15 +13,16 @@ func JWT() gin.HandlerFunc {
 		token := ginCtx.Query(consts.AuthorizationKey)
 		if token == "" {
 			token = ginCtx.PostForm(consts.AuthorizationKey)
+			// 无token异常
 			if token == "" {
-				code = 500
+				code = consts.NoTokenErrCode
 			}
 		}
 		if code == 0 {
 			_, err := utils.ParseToken(token)
 			// 解析token异常
 			if err != nil {
-				code = 401
+				code = consts.AuthorizationErrCode
 			}
 		}
 		if code != 0 {

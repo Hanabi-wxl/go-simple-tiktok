@@ -1,8 +1,9 @@
 syntax = "proto2";
 package service;
-option go_package = "./;idl";
+option go_package = "./;service";
 
 import "model.proto";
+import "validate.proto";
 
 message douyin_feed_request {
   optional int64 latest_time = 1; // 可选参数，限制返回视频的最新投稿时间戳，精确到秒，不填表示当前时间
@@ -50,8 +51,8 @@ message douyin_user_response {
 }
 
 message douyin_user_login_request {
-  required string username = 1; // 登录用户名
-  required string password = 2; // 登录密码
+  required string username = 1[(validate.rules).string.max_len = 32]; // 登录用户名
+  required string password = 2[(validate.rules).string.max_len = 32]; // 登录密码
 }
 
 message douyin_user_login_response {
@@ -62,8 +63,8 @@ message douyin_user_login_response {
 }
 
 message douyin_user_register_request {
-  required string username = 1; // 注册用户名，最长32个字符
-  required string password = 2; // 密码，最长32个字符
+  required string username = 1[(validate.rules).string.max_len = 32]; // 注册用户名，最长32个字符
+  required string password = 2[(validate.rules).string.max_len = 32]; // 密码，最长32个字符
 }
 
 message douyin_user_register_response {

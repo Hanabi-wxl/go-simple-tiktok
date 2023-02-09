@@ -1,6 +1,6 @@
 syntax = "proto2";
 package service;
-option go_package = "./;idl";
+option go_package = "./;service";
 
 message Video {
   required int64 id = 1; // 视频唯一标识

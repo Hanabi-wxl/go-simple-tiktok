@@ -28,12 +28,6 @@ var (
 		".mpeg": {},
 		".mov":  {},
 	}
-	PictureTypeMap = map[string]struct{}{
-		".jpg": {},
-		".bmp": {},
-		".png": {},
-		".svg": {},
-	}
 )
 
 /*
@@ -42,12 +36,12 @@ var (
   权限：40xx
 */
 const (
-	SuccessCode          = 1000
 	ParamErrCode         = 1001
 	PostFormVideoErrCode = 3001
 	VideoTypeErrCode     = 3002
 	SaveFileTempErrCode  = 3003
 	VideoCaptureErrCode  = 3004
+	NoTokenErrCode       = 4000
 	AuthorizationErrCode = 4001
 )
 

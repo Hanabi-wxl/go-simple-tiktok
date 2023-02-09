@@ -1,23 +1,23 @@
 package action
 
 import (
+	"gateway/biz/handler"
 	"gateway/mw"
 	"github.com/gin-gonic/gin"
 )
 
 func Register(engin *gin.Engine) {
 	douyin := engin.Group("/douyin")
-	douyin.Use(mw.JWT())
 	{
 		favorite := douyin.Group("/favorite")
 		{
-			favorite.POST("/action/")
-			favorite.GET("/list/")
+			favorite.POST("/action/", mw.JWT(), handler.FavoriteAction)
+			favorite.GET("/list/", handler.FavoriteList)
 		}
 		comment := douyin.Group("/comment")
 		{
-			comment.POST("/action/")
-			comment.GET("/list/")
+			comment.POST("/action/", mw.JWT(), handler.CommentAction)
+			comment.GET("/list/", handler.CommentList)
 		}
 	}
 }

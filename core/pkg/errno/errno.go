@@ -4,8 +4,6 @@ import "github.com/pkg/errors"
 
 var (
 	DbSelectErr          = errors.New("查询错误")
-	DbUpdateErr          = errors.New("更新错误")
-	DbDeleteErr          = errors.New("删除错误")
 	DbInsertErr          = errors.New("新增错误")
 	UserAlreadyExitErr   = errors.New("用户已存在")
 	UserNotExitErr       = errors.New("用户不存在")

@@ -9,4 +9,5 @@ const (
 	PassWordCost    = 12
 )
 
-var ZERO *int32
+var DefaultCode int32 = 0
+var DefaultMsg = "success"

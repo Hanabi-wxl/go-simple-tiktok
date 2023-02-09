@@ -6,28 +6,30 @@ import (
 )
 
 type Comment struct {
-	CommentId   int                   `gorm:"column:comment_id" json:"comment_id"`
-	UserId      int                   `gorm:"column:user_id" json:"user_id"`
-	VideoId     int                   `gorm:"column:video_id" json:"video_id"`
+	Id          int64                 `gorm:"column:id" json:"id"`
+	UserId      int64                 `gorm:"column:user_id" json:"user_id"`
+	VideoId     int64                 `gorm:"column:video_id" json:"video_id"`
 	CommentText string                `gorm:"column:comment_text" json:"comment_text"`
 	CommentTime int64                 `gorm:"column:comment_time" json:"comment_time"`
 	IsDeleted   soft_delete.DeletedAt `gorm:"softDelete:flag;column:is_deleted" json:"is_deleted"`
 }
 
 type Favorite struct {
-	UserId    int                   `gorm:"column:user_id" json:"user_id"`
-	VideoId   int                   `gorm:"column:video_id" json:"video_id"`
+	Id        int64                 `gorm:"column:id" json:"id"`
+	UserId    int64                 `gorm:"column:user_id" json:"user_id"`
+	VideoId   int64                 `gorm:"column:video_id" json:"video_id"`
 	IsDeleted soft_delete.DeletedAt `gorm:"softDelete:flag;column:is_deleted" json:"is_deleted"`
 }
 
 type Follow struct {
-	FollowId   int                   `gorm:"column:follow_id" json:"follow_id"`
-	FollowerId int                   `gorm:"column:follower_id" json:"follower_id"`
+	Id         int64                 `gorm:"column:id" json:"id"`
+	FollowId   int64                 `gorm:"column:follow_id" json:"follow_id"`
+	FollowerId int64                 `gorm:"column:follower_id" json:"follower_id"`
 	IsDeleted  soft_delete.DeletedAt `gorm:"softDelete:flag;column:is_deleted" json:"is_deleted"`
 }
 
 type Message struct {
-	MessageId  int    `gorm:"column:message_id" json:"message_id"`
+	Id         int64  `gorm:"column:id" json:"id"`
 	FromUserId int    `gorm:"column:from_user_id" json:"from_user_id"`
 	ToUserId   int    `gorm:"column:to_user_id" json:"to_user_id"`
 	Content    string `gorm:"column:content" json:"content"`

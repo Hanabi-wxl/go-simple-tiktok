@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func (*CoreService) Feed(ctx context.Context, req *service.DouyinFeedRequest, resp *service.DouyinFeedResponse) error {
+func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp *service.DouyinFeedResponse) error {
 	var (
 		videos     []model.Video
 		videoInfos []model.VideoInfo
@@ -27,6 +27,7 @@ func (*CoreService) Feed(ctx context.Context, req *service.DouyinFeedRequest, re
 	timeTime := time.UnixMilli(lastTime)
 	token := req.GetToken()
 	claims, _ := utils.ParseToken(token)
+	// 登录后获取userId
 	if claims != nil {
 		userId = claims.UserId
 	}
@@ -40,10 +41,10 @@ func (*CoreService) Feed(ctx context.Context, req *service.DouyinFeedRequest, re
 		videoInfo.CoverUrl = video.CoverUrl
 		authId := video.Author
 		// 点赞评论信息
-		actionInfo := db.GetActionCount(authId)
+		actionInfo := db.GetActionCount(video.VideoId)
 		videoInfo.FavoriteCount = actionInfo.FavoriteCount
 		videoInfo.CommentCount = actionInfo.CommentCount
-		checkFavorite := db.CheckFavorite(userId, authId)
+		checkFavorite := db.CheckFavorite(userId, video.VideoId)
 		videoInfo.IsFavorite = checkFavorite
 		// 作者信息
 		infoById := db.GetUserInfoById(authId)
@@ -57,11 +58,11 @@ func (*CoreService) Feed(ctx context.Context, req *service.DouyinFeedRequest, re
 		// 合并到全部所需信息
 		videoInfos = append(videoInfos, videoInfo)
 	}
-	pack.BuildFeedRes(resp, videoInfos, lastTime)
+	pack.BuildFeedResp(resp, videoInfos, lastTime)
 	return nil
 }
 
-func (*CoreService) UserRegister(ctx context.Context, req *service.DouyinUserRegisterRequest, resp *service.DouyinUserRegisterResponse) error {
+func (*CoreService) UserRegister(_ context.Context, req *service.DouyinUserRegisterRequest, resp *service.DouyinUserRegisterResponse) error {
 	username := req.GetUsername()
 	password := req.GetPassword()
 	if exit := db.CheckUserExit(username); exit {
@@ -74,7 +75,7 @@ func (*CoreService) UserRegister(ctx context.Context, req *service.DouyinUserReg
 	return nil
 }
 
-func (*CoreService) UserLogin(ctx context.Context, req *service.DouyinUserLoginRequest, resp *service.DouyinUserLoginResponse) error {
+func (*CoreService) UserLogin(_ context.Context, req *service.DouyinUserLoginRequest, resp *service.DouyinUserLoginResponse) error {
 	var user model.User
 	user.Name = req.GetUsername()
 	if exit := db.CheckUserExit(user.Name); !exit {
@@ -91,12 +92,11 @@ func (*CoreService) UserLogin(ctx context.Context, req *service.DouyinUserLoginR
 	return nil
 }
 
-func (*CoreService) User(ctx context.Context, req *service.DouyinUserRequest, resp *service.DouyinUserResponse) error {
+func (*CoreService) User(_ context.Context, req *service.DouyinUserRequest, resp *service.DouyinUserResponse) error {
 	// 查看自己信息时checkUserId == userId
 	// 查看他人信息时userId为抖音使用者id checkUserId为发视频作者id
 	checkUserId := req.GetUserId()
-	claims, _ := utils.ParseToken(req.GetToken())
-	userId := claims.UserId
+	userId := utils.GetUserId(req.GetToken())
 	// 获取用户信息
 	checkUserInfo := db.GetUserInfoById(checkUserId)
 	followInfo := db.GetUserFollowInfo(checkUserId, userId)
@@ -104,7 +104,7 @@ func (*CoreService) User(ctx context.Context, req *service.DouyinUserRequest, re
 	return nil
 }
 
-func (*CoreService) PublishAction(ctx context.Context, req *service.DouyinPublishActionRequest, resp *service.DouyinPublishActionResponse) error {
+func (*CoreService) PublishAction(_ context.Context, req *service.DouyinPublishActionRequest, resp *service.DouyinPublishActionResponse) error {
 	var fileInfo service.Video
 	var video model.Video
 	_ = json.Unmarshal(req.Data, &fileInfo)
@@ -117,6 +117,50 @@ func (*CoreService) PublishAction(ctx context.Context, req *service.DouyinPublis
 	return nil
 }
 
-func (*CoreService) PublishList(ctx context.Context, req *service.DouyinPublishListRequest, resp *service.DouyinPublishListResponse) error {
+func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishListRequest, resp *service.DouyinPublishListResponse) error {
+	var (
+		videos     []model.Video
+		videoInfos []model.VideoInfo
+		videoInfo  model.VideoInfo
+		author     model.Author
+		userId     int64
+	)
+	// 作者id
+	checkId := req.GetUserId()
+	// 用户id
+	userId = utils.GetUserId(req.GetToken())
+
+	// 作者信息
+	infoById := db.GetUserInfoById(checkId)
+	author.Name = infoById.Name
+	author.Id = checkId
+	// 查询自己时userId == checkId
+	followInfo := db.GetUserFollowInfo(checkId, userId)
+	author.IsFollow = followInfo.IsFollow
+	author.FollowCount = followInfo.FollowerCount
+	author.FollowerCount = followInfo.FollowerCount
+
+	// 获取指定作者id 查询自己时userId == checkId
+	videos = db.GetVideosByUserId(checkId)
+
+	for _, video := range videos {
+		// 视频信息
+		videoInfo.Id = video.VideoId
+		videoInfo.Title = video.Title
+		videoInfo.PlayUrl = video.PlayUrl
+		videoInfo.CoverUrl = video.CoverUrl
+		authId := video.Author
+		// 点赞评论信息
+		actionInfo := db.GetActionCount(video.VideoId)
+		videoInfo.FavoriteCount = actionInfo.FavoriteCount
+		videoInfo.CommentCount = actionInfo.CommentCount
+		checkFavorite := db.CheckFavorite(userId, authId)
+		videoInfo.IsFavorite = checkFavorite
+		// 作者信息
+		videoInfo.Author = author
+		// 合并到全部所需信息
+		videoInfos = append(videoInfos, videoInfo)
+	}
+	pack.BuildPublishListResp(resp, videoInfos)
 	return nil
 }

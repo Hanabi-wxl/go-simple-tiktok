@@ -7,4 +7,5 @@ const (
 	MysqlDSN          = "root:@tcp(localhost:3306)/simple_tiktok?charset=utf8&parseTime=True&loc=Local"
 )
 
-var ZERO *int32
+var DefaultCode int32 = 0
+var DefaultMsg = "success"
