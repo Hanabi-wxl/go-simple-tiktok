@@ -1,3 +1,5 @@
+// Package model
+// @Description: 数据库实体对象
 package model
 
 import (
@@ -29,11 +31,11 @@ type Follow struct {
 }
 
 type Message struct {
-	Id         int64  `gorm:"column:id" json:"id"`
-	FromUserId int    `gorm:"column:from_user_id" json:"from_user_id"`
-	ToUserId   int    `gorm:"column:to_user_id" json:"to_user_id"`
-	Content    string `gorm:"column:content" json:"content"`
-	SendTime   int64  `gorm:"column:send_time" json:"send_time"`
+	Id         int64     `gorm:"column:id" json:"id"`
+	FromUserId int64     `gorm:"column:from_user_id" json:"from_user_id"`
+	ToUserId   int64     `gorm:"column:to_user_id" json:"to_user_id"`
+	Content    string    `gorm:"column:content" json:"content"`
+	SendTime   time.Time `gorm:"column:send_time" json:"send_time"`
 }
 
 type User struct {

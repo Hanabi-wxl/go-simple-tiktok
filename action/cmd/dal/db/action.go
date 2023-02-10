@@ -84,12 +84,15 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 		followerCount int64
 		checkFollow   int64
 	)
-	if err := DB.Model(&followModel).Where("follow_id = ?", checkUserId).Count(&followCount).Error; err != nil {
+	// 关注数
+	if err := DB.Model(&followModel).Where("follower_id = ?", checkUserId).Count(&followCount).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
-	if err := DB.Model(&followModel).Where("follower_id = ?", checkUserId).Count(&followerCount).Error; err != nil {
+	// 粉丝数
+	if err := DB.Model(&followModel).Where("follow_id = ?", checkUserId).Count(&followerCount).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
+	// 是否已关注
 	if err := DB.Model(&followModel).Where("follow_id = ? AND follower_id = ?", checkUserId, userId).
 		Count(&checkFollow).Error; err != nil {
 		panic(errno.DbSelectErr)
@@ -108,7 +111,7 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 // @param id 用户id
 // @return user 用户信息
 func GetUserInfoById(id int64) (user model.User) {
-	if err := DB.Find(&user, "user_id = ?", id).Error; err != nil {
+	if err := DB.Omit("password").Find(&user, "user_id = ?", id).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
 	return user

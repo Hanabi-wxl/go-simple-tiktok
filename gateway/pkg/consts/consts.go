@@ -4,7 +4,7 @@ import "gateway/pkg/result"
 
 const (
 	ETCDAddr            = "127.0.0.1:2379"
-	GateWayAddr         = "127.0.0.1:8000" //  "192.168.1.8:8000"
+	GateWayAddr         = "192.168.1.8:8000" // "127.0.0.1:8000"
 	CoreClientName      = "coreService.client"
 	ActionClientName    = "actionService.client"
 	RelationClientName  = "relationService.client"
@@ -15,7 +15,7 @@ const (
 	AuthorizationKey    = "token"
 	FfmpegPath          = "/bin/ffmpeg.exe"
 	StaticFilePath      = "/static/"
-	ServerIP            = "127.0.0.1"
+	ServerIP            = "192.168.1.8" // "127.0.0.1"
 	ServerPort          = "8000"
 )
 
@@ -51,5 +51,4 @@ var (
 	VideoTypeErrErr  = result.NewClientError(VideoTypeErrCode, "视频格式不支持")
 	SaveFileTempErr  = result.NewClientError(SaveFileTempErrCode, "暂存文件失败")
 	VideoCaptureErr  = result.NewClientError(VideoCaptureErrCode, "视频截图失败")
-	AuthorizationErr = result.NewClientError(VideoCaptureErrCode, "用户认证已过期")
 )

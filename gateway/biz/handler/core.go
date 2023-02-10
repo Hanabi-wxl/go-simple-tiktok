@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"gateway/biz/service"
 	"gateway/pkg/consts"
 	"gateway/pkg/utils"
@@ -196,64 +195,6 @@ func PublishList(ginCtx *gin.Context) {
 	pubReq.Token = &token
 	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
 	response, err := coreService.PublishList(context.Background(), &pubReq)
-	if err != nil {
-		SendServiceErr(ginCtx, err)
-		return
-	}
-	ginCtx.JSON(http.StatusOK, response)
-}
-
-// RelationAction 关注操作
-func RelationAction(ginCtx *gin.Context) {
-	uid, err := strconv.Atoi(ginCtx.PostForm("to_user_id"))
-	if err != nil {
-		SendClientErr(ginCtx, consts.ParamErr)
-		return
-	}
-	toUserId := int64(uid)
-
-	act, err := strconv.Atoi(ginCtx.PostForm("action_type"))
-	if err != nil {
-		SendClientErr(ginCtx, consts.ParamErr)
-		return
-	}
-	actionType := int32(act)
-
-	token := ginCtx.PostForm(consts.AuthorizationKey)
-	//claims, _ := utils.ParseToken(token)
-	var relReq service.DouyinRelationActionRequest
-
-	relReq.ActionType = &actionType
-	relReq.Token = &token
-	relReq.ToUserId = &toUserId
-
-	relationService := ginCtx.Keys[consts.RelationServiceName].(service.RelationService)
-	response, err := relationService.RelationAction(context.Background(), &relReq)
-	if err != nil {
-		SendServiceErr(ginCtx, err)
-		return
-	}
-	ginCtx.JSON(http.StatusOK, response)
-}
-
-// RelationList 关注列表
-func RelationList(ginCtx *gin.Context) {
-	uid, err := strconv.Atoi(ginCtx.Query("user_id"))
-	fmt.Println("tyt uid = ", uid)
-	if err != nil {
-		SendClientErr(ginCtx, consts.ParamErr)
-		return
-	}
-	userId := int64(uid)
-	token := ginCtx.Query(consts.AuthorizationKey)
-	//claims, _ := utils.ParseToken(token)
-	var relReq service.DouyinRelationFollowListRequest
-
-	relReq.UserId = &userId
-	relReq.Token = &token
-
-	relationService := ginCtx.Keys[consts.RelationServiceName].(service.RelationService)
-	response, err := relationService.FollowList(context.Background(), &relReq)
 	if err != nil {
 		SendServiceErr(ginCtx, err)
 		return

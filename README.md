@@ -1,8 +1,16 @@
-# go-simple-tiktok
+# go-simple-tiktok 简易抖音
 
-###
+### 项目介绍
 
-目录结构
+- 视频Feed流: 支持所有用户刷抖音，视频按投稿时间倒序推出
+- 视频投稿: 支持登录用户自己拍视频投稿
+- 个人主页: 支持查看用户基本信息和投稿列表，注册用户流程简化
+- 喜欢列表: 登录用户可以对视频点赞，在个人主页喜欢Tab下能够查看点赞视频列表
+- 用户评论: 支持未登录用户查看视频下的评论列表，登录用户能够发表评论
+- 关系列表: 登录用户可以关注其他用户，能够在个人主页查看本人的关注数和粉丝数，查看关注列表和粉丝列表
+- 消息: 登录用户在消息页展示已关注的用户列表，点击用户头像进入聊天页后可以发送消息
+
+### 目录结构
 ```
 .
 ├─action 互动模块
@@ -15,7 +23,7 @@
 │  │  └─service 放置proto生成的代码
 │  ├─idl proto文件
 │  └─pkg 其它可供全局访问的代码
-│      └─consts 常量、配置
+│      ├─consts 常量、配置
 │      ├─errno 异常信息
 │      └─utils 工具包
 ├─core 基础模块
@@ -28,7 +36,7 @@
 │  │  └─service
 │  ├─idl
 │  └─pkg
-│      └─consts
+│      ├─consts
 │      ├─errno
 │      └─utils
 ├─gateway 网关 （gin）
@@ -59,8 +67,30 @@
   │  └─service
   ├─idl
   └─pkg
-    └─consts
+     ├─consts
+     ├─errno
+     └─utils
 ```
+
+### 项目架构图
+
+![image-20230210021530831](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/image-20230210021530831.png)
+
+### 技术点
+
+- web: gin
+- rpc: go-micro(v2), protobuf, etcd
+- 数据库: mysql
+- 持久层: gorm
+- 认证: JWT
+- 参数校验: protoc-gen-validate
+- 视频文件操作: ffmpeg
+
+
+### 数据库结构
+
+![img](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/img.png)
+
 
 ### Sample
 
@@ -130,4 +160,3 @@ func (*CoreService) Feed(ctx context.Context, req *service.DouyinFeedRequest, re
 11. 执行微服务代码逻辑
 
 ![image-20230207114247967](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/image-20230207114247967.png)
-

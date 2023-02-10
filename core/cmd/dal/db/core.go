@@ -4,7 +4,6 @@ import (
 	"core/cmd/model"
 	"core/pkg/consts"
 	"core/pkg/errno"
-	"fmt"
 	"time"
 )
 
@@ -12,7 +11,7 @@ import (
 // @Description: 检查用户名是否存在
 // @auth sinre 2023-02-09 16:42:25
 // @param username 用户名
-// @return bool
+// @return bool true为存在
 func CheckUserExit(username string) bool {
 	var user model.User
 	var count int64
@@ -36,7 +35,6 @@ func CreateUser(username, password string) {
 	user.Name = username
 	// 生成加密密码
 	_ = user.SetPassword(password)
-	fmt.Println("user = ", user)
 	if err := DB.Create(&user).Error; err != nil {
 		panic(errno.DbInsertErr)
 	}
@@ -92,11 +90,11 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 		checkFollow   int64
 	)
 	// 关注数
-	if err := DB.Model(&followModel).Where("follow_id = ?", checkUserId).Count(&followCount).Error; err != nil {
+	if err := DB.Model(&followModel).Where("follower_id = ?", checkUserId).Count(&followCount).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
 	// 粉丝数
-	if err := DB.Model(&followModel).Where("follower_id = ?", checkUserId).Count(&followerCount).Error; err != nil {
+	if err := DB.Model(&followModel).Where("follow_id = ?", checkUserId).Count(&followerCount).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
 	// 是否已关注
@@ -117,7 +115,7 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 // @auth sinre 2023-02-09 16:45:47
 // @param time 时间戳
 // @return videos 视频信息
-// @return lastTime
+// @return lastTime 较晚发布的视频的时间戳
 func FeedVideos(time time.Time) (videos []model.Video, lastTime int64) {
 	if err := DB.Where("upload_time < ?", time).
 		Order("upload_time desc").Limit(consts.VideoLimit).Find(&videos).Error; err != nil {

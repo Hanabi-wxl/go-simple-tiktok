@@ -1,6 +1,7 @@
 package relation
 
 import (
+	"gateway/biz/handler"
 	"gateway/mw"
 	"github.com/gin-gonic/gin"
 )
@@ -11,10 +12,10 @@ func Register(engin *gin.Engine) {
 	{
 		relation := douyin.Group("/relation")
 		{
-			relation.POST("/action/")
-			relation.GET("/follow/list/")
-			relation.GET("/follower/list/")
-			relation.GET("/friend/list/")
+			relation.POST("/action/", handler.RelationAction)
+			relation.GET("/follow/list/", handler.RelationList)
+			relation.GET("/follower/list/", handler.FollowerList)
+			relation.GET("/friend/list/", handler.FriendList)
 		}
 		message := douyin.Group("/message")
 		{
