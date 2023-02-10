@@ -9,10 +9,13 @@ import (
 	"core/pkg/errno"
 	"core/pkg/utils"
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
 func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp *service.DouyinFeedResponse) error {
+
+	fmt.Println("feed，，，，，，，，")
 	var (
 		videos     []model.Video
 		videoInfos []model.VideoInfo

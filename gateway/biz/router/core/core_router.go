@@ -23,5 +23,12 @@ func Register(engin *gin.Engine) {
 			publish.POST("/action/", mw.JWT(), handler.PublishAction)
 			publish.GET("/list/", handler.PublishList)
 		}
+
+		relation := douyin.Group("/relation")
+		//relation.Use(mw.JWT())
+		{
+			relation.POST("/action", handler.RelationAction)
+			relation.GET("/follow/list", handler.RelationList)
+		}
 	}
 }

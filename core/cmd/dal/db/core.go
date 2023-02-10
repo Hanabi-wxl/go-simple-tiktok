@@ -4,6 +4,7 @@ import (
 	"core/cmd/model"
 	"core/pkg/consts"
 	"core/pkg/errno"
+	"fmt"
 	"time"
 )
 
@@ -35,6 +36,7 @@ func CreateUser(username, password string) {
 	user.Name = username
 	// 生成加密密码
 	_ = user.SetPassword(password)
+	fmt.Println("user = ", user)
 	if err := DB.Create(&user).Error; err != nil {
 		panic(errno.DbInsertErr)
 	}

@@ -1,7 +1,6 @@
-package core
-
-type RelationService struct {
-}
+// Package model
+// @Description: 数据传输对象(DTO)
+package model
 
 // FollowInfo
 // @Description: 关注信息
