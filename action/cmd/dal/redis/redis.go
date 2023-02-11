@@ -11,6 +11,8 @@ var rdContext = context.Background()
 var RdStar *redis.Client
 var RdStars *redis.Client
 
+var RdComments *redis.Client
+
 func Init() {
 	// 点赞操作的主体为: 点赞者与视频
 	// 保存用户点赞的视频 userId: videoId
@@ -24,5 +26,11 @@ func Init() {
 		Addr:     consts.RedisHost,
 		Password: consts.RedisPassword,
 		DB:       1,
+	})
+	// 保存视频的评论信息 videoId: commentId
+	RdComments = redis.NewClient(&redis.Options{
+		Addr:     consts.RedisHost,
+		Password: consts.RedisPassword,
+		DB:       2,
 	})
 }

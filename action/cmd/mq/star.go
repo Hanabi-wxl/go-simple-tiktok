@@ -20,14 +20,14 @@ var StarAddQue *StarMQ
 var StarDelQue *StarMQ
 
 func initStar() {
-	StarAddQue = newStarRabbitMQ(consts.RMQStartAddQueueName)
+	StarAddQue = newStarMQ(consts.RMQStartAddQueueName)
 	go StarAddQue.Consumer()
 
-	StarDelQue = newStarRabbitMQ(consts.RMQStartDelQueueName)
+	StarDelQue = newStarMQ(consts.RMQStartDelQueueName)
 	go StarDelQue.Consumer()
 }
 
-func newStarRabbitMQ(queueName string) *StarMQ {
+func newStarMQ(queueName string) *StarMQ {
 	starMQ := &StarMQ{
 		RabbitMQ:  *MQ,
 		queueName: queueName,
@@ -92,10 +92,10 @@ func (smq *StarMQ) Consumer() {
 	}
 	forever := make(chan bool)
 	switch smq.queueName {
-	case "star_add":
+	case consts.RMQStartAddQueueName:
 		//点赞消费队列
 		go smq.consumerStarAdd(messages)
-	case "star_del":
+	case consts.RMQStartDelQueueName:
 		//取消赞消费队列
 		go smq.consumerStarDel(messages)
 	}
@@ -105,7 +105,7 @@ func (smq *StarMQ) Consumer() {
 // consumerStarAdd 点赞消费队列
 func (smq *StarMQ) consumerStarAdd(messages <-chan amqp.Delivery) {
 	for d := range messages {
-		var ss model.Star
+		var ss model.MQStar
 		err := json.Unmarshal(d.Body, &ss)
 		if err != nil {
 			panic(err)
@@ -119,7 +119,7 @@ func (smq *StarMQ) consumerStarAdd(messages <-chan amqp.Delivery) {
 // consumerStarDel 取消点赞消费队列
 func (smq *StarMQ) consumerStarDel(messages <-chan amqp.Delivery) {
 	for d := range messages {
-		var ss model.Star
+		var ss model.MQStar
 		err := json.Unmarshal(d.Body, &ss)
 		if err != nil {
 			panic(err)

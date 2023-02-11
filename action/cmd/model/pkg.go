@@ -47,7 +47,11 @@ type CommentInfo struct {
 	CreateDate string
 }
 
-type Star struct {
+type MQStar struct {
 	UserId  int64
 	VideoId int64
+}
+
+type MQComment struct {
+	CommentId int64
 }

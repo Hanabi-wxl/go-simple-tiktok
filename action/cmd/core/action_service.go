@@ -22,7 +22,7 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 	suid := strconv.Itoa(int(uid))
 	svid := strconv.Itoa(int(videoId))
 	if exit := db.CheckVideoExit(videoId); exit {
-		body, _ := json.Marshal(model.Star{UserId: uid, VideoId: videoId})
+		body, _ := json.Marshal(model.MQStar{UserId: uid, VideoId: videoId})
 		if acType == 1 {
 			// 维护redis数据库: Star
 			// 查询是否存在userId
@@ -139,6 +139,7 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	checkId := req.GetUserId()
 	userId = utils.GetUserId(token)
 	suid := strconv.Itoa(int(userId))
+	scid := strconv.Itoa(int(checkId))
 	// 作者信息
 	infoById := db.GetUserInfoById(checkId)
 	author.Name = &infoById.Name
@@ -149,9 +150,9 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	author.FollowCount = &followInfo.FollowerCount
 	author.FollowerCount = &followInfo.FollowerCount
 
-	if exit := redis.CheckUserIdExitInStar(suid); exit {
+	if exit := redis.CheckUserIdExitInStar(scid); exit {
 		// 查询视频作者喜欢列表
-		fids = redis.GetVideoIdsInStar(suid)
+		fids = redis.GetVideoIdsInStar(scid)
 		// 查询视频信息
 		videos = db.GetFavoriteVideos(fids)
 		for _, video := range videos {
@@ -162,9 +163,13 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 			videoInfo.CoverUrl = &video.CoverUrl
 			authId := video.Author
 			// 点赞评论信息
-			actionInfo := db.GetActionCount(authId)
-			videoInfo.FavoriteCount = &actionInfo.FavoriteCount
-			videoInfo.CommentCount = &actionInfo.CommentCount
+			svid := strconv.Itoa(int(video.VideoId))
+			stars := redis.GetUserIdsInStars(svid)
+			comments := redis.GetCommentIdsInComments(svid)
+			fc := int64(len(stars))
+			cc := int64(len(comments))
+			videoInfo.FavoriteCount = &fc
+			videoInfo.CommentCount = &cc
 			checkFavorite := db.CheckFavorite(userId, authId)
 			videoInfo.IsFavorite = &checkFavorite
 			// 作者信息
@@ -198,9 +203,13 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 			videoInfo.CoverUrl = &video.CoverUrl
 			authId := video.Author
 			// 点赞评论信息
-			actionInfo := db.GetActionCount(authId)
-			videoInfo.FavoriteCount = &actionInfo.FavoriteCount
-			videoInfo.CommentCount = &actionInfo.CommentCount
+			svid := strconv.Itoa(int(video.VideoId))
+			stars := redis.GetUserIdsInStars(svid)
+			comments := redis.GetCommentIdsInComments(svid)
+			fc := int64(len(stars))
+			cc := int64(len(comments))
+			videoInfo.FavoriteCount = &fc
+			videoInfo.CommentCount = &cc
 			checkFavorite := db.CheckFavorite(userId, authId)
 			videoInfo.IsFavorite = &checkFavorite
 			// 作者信息
@@ -217,21 +226,56 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 	var (
 		userId     int64
 		videoId    = req.GetVideoId()
+		svid       = strconv.Itoa(int(videoId))
 		acType     = req.GetActionType()
+		commentId  = req.GetCommentId()
 		comment    model.Comment
 		userInfo   model.User
 		followInfo model.FollowInfo
 	)
+
 	token := req.GetToken()
 	userId = utils.GetUserId(token)
 	if exit := db.CheckVideoExit(videoId); exit {
 		if acType == 1 {
-			comment := db.CreateComment(userId, videoId, req.GetCommentText())
-			userInfo := db.GetUserInfoById(userId)
-			followInfo := db.GetUserFollowInfo(userId, userId)
+			comment = db.CreateComment(userId, videoId, req.GetCommentText())
+			// 判断是否存在key: videoId
+			if exit1 := redis.CheckVideoIdInComments(svid); exit1 {
+				if save := redis.AddCommentIdInComments(svid, comment.Id); !save {
+					redis.DeleteVideoIdInComments(svid)
+				}
+			} else {
+				// 创建key: videoId
+				redis.AddVideoIdInComments(svid)
+				redis.AddExpireInComments(svid)
+				commentList := db.GetCommentList(videoId)
+				for i := 0; i < len(commentList); i++ {
+					if save := redis.AddCommentIdInComments(svid, commentList[i].Id); !save {
+						redis.DeleteVideoIdInComments(svid)
+					}
+				}
+			}
+			userInfo = db.GetUserInfoById(userId)
+			followInfo = db.GetUserFollowInfo(userId, userId)
 			pack.BuildCommentActionResp(resp, comment, userInfo, followInfo)
 		} else if acType == 2 {
-			db.DeleteComment(userId, videoId, req.GetCommentId())
+			// 判断是否存在key: videoId
+			body, _ := json.Marshal(&model.MQComment{CommentId: commentId})
+			if exit1 := redis.CheckVideoIdInComments(svid); exit1 {
+				redis.RemoveCommentIdInComments(svid, commentId)
+				mq.CommentDelQue.Publish(body)
+			} else {
+				// 创建key: videoId
+				redis.AddVideoIdInComments(svid)
+				redis.AddExpireInComments(svid)
+				commentList := db.GetCommentList(videoId)
+				for i := 0; i < len(commentList); i++ {
+					if save := redis.AddCommentIdInComments(svid, commentList[i].Id); !save {
+						redis.DeleteVideoIdInComments(svid)
+					}
+				}
+				mq.CommentDelQue.Publish(body)
+			}
 			pack.BuildCommentActionResp(resp, comment, userInfo, followInfo)
 		}
 	} else {
@@ -243,27 +287,63 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentListRequest, resp *service.DouyinCommentListResponse) error {
 	userId := utils.GetUserId(req.GetToken())
 	var (
-		commentInfo  service.Comment
 		commentInfos []*service.Comment
 	)
+
 	videoId := req.GetVideoId()
-	commentList := db.GetCommentList(videoId)
-	for i := 0; i < len(commentList); i++ {
-		comment := commentList[i]
-		// 用户信息
-		userInfo := db.GetUserInfoById(comment.UserId)
-		// 点赞评论信息
-		followInfo := db.GetUserFollowInfo(comment.UserId, userId)
-		commentInfo.Id = &comment.Id
-		commentInfo.Content = &comment.CommentText
-		format := comment.CommentTime.Format("01-02")
-		commentInfo.CreateDate = &format
-		commentInfo.User.Id = &userInfo.UserId
-		commentInfo.User.Name = &userInfo.Name
-		commentInfo.User.FollowCount = &followInfo.FollowCount
-		commentInfo.User.FollowerCount = &followInfo.FollowerCount
-		commentInfo.User.IsFollow = &followInfo.IsFollow
-		commentInfos = append(commentInfos, &commentInfo)
+	svid := strconv.Itoa(int(videoId))
+	if vexit := db.CheckVideoExit(videoId); vexit {
+		if exit := redis.CheckVideoIdInComments(svid); exit {
+			ids := redis.GetCommentIdsInComments(svid)
+			for i := 0; i < len(ids); i++ {
+				var commentInfo service.Comment
+				var user service.User
+				commentInfo.User = &user
+				comment := db.GetCommentById(ids[i])
+				// 用户信息
+				userInfo := db.GetUserInfoById(comment.UserId)
+				// 点赞评论信息
+				followInfo := db.GetUserFollowInfo(comment.UserId, userId)
+				commentInfo.Id = &comment.Id
+				commentInfo.Content = &comment.CommentText
+				format := comment.CommentTime.Format("01-02")
+				commentInfo.CreateDate = &format
+				commentInfo.User.Id = &userInfo.UserId
+				commentInfo.User.Name = &userInfo.Name
+				commentInfo.User.FollowCount = &followInfo.FollowCount
+				commentInfo.User.FollowerCount = &followInfo.FollowerCount
+				commentInfo.User.IsFollow = &followInfo.IsFollow
+				commentInfos = append(commentInfos, &commentInfo)
+			}
+		} else {
+			redis.AddVideoIdInComments(svid)
+			redis.AddExpireInComments(svid)
+			commentList := db.GetCommentList(videoId)
+			for i := 0; i < len(commentList); i++ {
+				var commentInfo service.Comment
+				var user service.User
+				commentInfo.User = &user
+				if save := redis.AddCommentIdInComments(svid, commentList[i].Id); !save {
+					redis.DeleteVideoIdInComments(svid)
+				}
+				// 用户信息
+				userInfo := db.GetUserInfoById(commentList[i].UserId)
+				// 点赞评论信息
+				followInfo := db.GetUserFollowInfo(commentList[i].UserId, userId)
+				commentInfo.Id = &commentList[i].Id
+				commentInfo.Content = &commentList[i].CommentText
+				format := commentList[i].CommentTime.Format("01-02")
+				commentInfo.CreateDate = &format
+				commentInfo.User.Id = &userInfo.UserId
+				commentInfo.User.Name = &userInfo.Name
+				commentInfo.User.FollowCount = &followInfo.FollowCount
+				commentInfo.User.FollowerCount = &followInfo.FollowerCount
+				commentInfo.User.IsFollow = &followInfo.IsFollow
+				commentInfos = append(commentInfos, &commentInfo)
+			}
+		}
+	} else {
+		return errno.VideoNotExit
 	}
 	pack.BuildCommentListResp(resp, commentInfos)
 	return nil

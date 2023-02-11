@@ -23,6 +23,7 @@ func Init() {
 	}
 	MQ.conn = dial
 	initStar()
+	initComment()
 }
 
 func (r *RabbitMQ) SendMqErr(err error, message string) {

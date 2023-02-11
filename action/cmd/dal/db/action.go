@@ -130,7 +130,7 @@ func GetUserInfoById(id int64) (user model.User) {
 	return user
 }
 
-// GetActionCount
+// GetActionCount 弃用
 // @Description: 获取点赞、评论数
 // @auth sinre 2023-02-09 16:32:07
 // @param id 视频id
@@ -204,11 +204,9 @@ func CreateComment(userId int64, videoId int64, comment string) model.Comment {
 // @param userId 用户id
 // @param videoId 视频id
 // @param commentId 评论id
-func DeleteComment(userId int64, videoId int64, commentId int64) {
+func DeleteComment(commentId int64) {
 	commentModel := model.Comment{
-		Id:      commentId,
-		UserId:  userId,
-		VideoId: videoId,
+		Id: commentId,
 	}
 	if err := DB.Delete(&commentModel).Error; err != nil {
 		panic(errno.DbUpdateErr)
@@ -225,4 +223,11 @@ func GetCommentList(vid int64) (comments []model.Comment) {
 		panic(errno.DbSelectErr)
 	}
 	return comments
+}
+
+func GetCommentById(cid int64) (comment model.Comment) {
+	if err := DB.Where("id = ?", cid).Find(&comment).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return comment
 }
