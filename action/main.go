@@ -3,6 +3,7 @@ package main
 import (
 	"action/cmd/core"
 	"action/cmd/dal"
+	"action/cmd/mq"
 	"action/cmd/service"
 	"action/pkg/consts"
 	"github.com/micro/go-micro/v2"
@@ -10,8 +11,13 @@ import (
 	"github.com/micro/go-micro/v2/registry/etcd"
 )
 
-func main() {
+func Init() {
 	dal.Init()
+	mq.Init()
+}
+
+func main() {
+	Init()
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(consts.ETCDAddr),
 	)

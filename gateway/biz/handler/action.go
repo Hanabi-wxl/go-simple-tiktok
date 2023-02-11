@@ -4,6 +4,7 @@ import (
 	"context"
 	"gateway/biz/service"
 	"gateway/pkg/consts"
+	"gateway/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -81,6 +82,7 @@ func CommentAction(ginCtx *gin.Context) {
 	)
 	token := ginCtx.Query(consts.AuthorizationKey)
 	commentText := ginCtx.Query("comment_text")
+	commentText = utils.Filter.Replace(commentText, '~')
 	vid, err1 := strconv.Atoi(ginCtx.Query("video_id"))
 	cidStr := ginCtx.Query("comment_id")
 	if len(cidStr) != 0 {

@@ -1,6 +1,8 @@
 package consts
 
-import "gateway/pkg/result"
+import (
+	"gateway/pkg/result"
+)
 
 const (
 	ETCDAddr            = "127.0.0.1:2379"
@@ -17,6 +19,7 @@ const (
 	StaticFilePath      = "/static/"
 	ServerIP            = "192.168.1.8" // "127.0.0.1"
 	ServerPort          = "8000"
+	SensitiveDictPath   = "./pkg/doc/dict.txt"
 )
 
 var (

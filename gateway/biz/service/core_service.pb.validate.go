@@ -1007,27 +1007,9 @@ func (m *DouyinUserLoginRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetUsername()) > 32 {
-		err := DouyinUserLoginRequestValidationError{
-			field:  "Username",
-			reason: "用户名最长为32个字符",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Username
 
-	if utf8.RuneCountInString(m.GetPassword()) > 32 {
-		err := DouyinUserLoginRequestValidationError{
-			field:  "Password",
-			reason: "密码最长为32个字符",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
+	// no validation rules for Password
 
 	if len(errors) > 0 {
 		return DouyinUserLoginRequestMultiError(errors)
@@ -1241,10 +1223,10 @@ func (m *DouyinUserRegisterRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetUsername()) > 32 {
+	if l := utf8.RuneCountInString(m.GetUsername()); l < 1 || l > 32 {
 		err := DouyinUserRegisterRequestValidationError{
 			field:  "Username",
-			reason: "用户名最长为32个字符",
+			reason: "value length must be between 1 and 32 runes, inclusive",
 		}
 		if !all {
 			return err
@@ -1252,10 +1234,10 @@ func (m *DouyinUserRegisterRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if utf8.RuneCountInString(m.GetPassword()) > 32 {
+	if l := utf8.RuneCountInString(m.GetPassword()); l < 6 || l > 32 {
 		err := DouyinUserRegisterRequestValidationError{
 			field:  "Password",
-			reason: "密码最长为32个字符",
+			reason: "value length must be between 6 and 32 runes, inclusive",
 		}
 		if !all {
 			return err

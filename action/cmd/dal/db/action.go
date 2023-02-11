@@ -3,6 +3,7 @@ package db
 import (
 	"action/cmd/model"
 	"action/pkg/errno"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -22,20 +23,32 @@ func CheckVideoExit(vid int64) bool {
 	return false
 }
 
+// GetStarUserById
+// @Description: 获取视频的点赞用户列表
+// @auth sinre 2023-02-11 00:01:08
+// @param vid 视频id
+// @return favorites
+func GetStarUserById(vid int64) (favorites []model.Favorite) {
+	if err := DB.Where("video_id = ?", vid).Find(&favorites).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return favorites
+}
+
 // CreateFavorite
 // @Description: 点赞
 // @auth sinre 2023-02-09 16:29:03
 // @param vid 视频id
 // @param uid 用户id
 func CreateFavorite(vid, uid int64) {
-	fav := model.Favorite{
-		UserId:  uid,
-		VideoId: vid,
+	var fav model.Favorite
+	if err := DB.Where("user_id = ? AND video_id = ?", uid, vid).First(&fav).Error; err == gorm.ErrRecordNotFound {
+		fav.VideoId = vid
+		fav.UserId = uid
+		if err := DB.Create(&fav).Error; err != nil {
+			panic(errno.DbInsertErr)
+		}
 	}
-	if err := DB.Create(&fav).Error; err != nil {
-		panic(errno.DbInsertErr)
-	}
-
 }
 
 // DeleteFavorite

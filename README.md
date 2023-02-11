@@ -18,7 +18,9 @@
 │  │  ├─core 实现类
 │  │  ├─dal 数据库操作
 │  │  │  └─db 类似java mapper持久层
+│  │  │  └─redis redis操作
 │  │  ├─model 数据库实体对象
+│  │  ├─mq 消息队列
 │  │  ├─pack 封装对象
 │  │  └─service 放置proto生成的代码
 │  ├─idl proto文件
@@ -53,6 +55,7 @@
 │  ├─mw 全局中间件
 │  └─pkg 其它可供全局访问的代码
 │  │  ├─consts 常量、配置
+│  │  ├─doc 文本文件
 │  │  ├─result 结果类、异常类
 │  │  ├─sql 数据库结构文件
 │  │  └─utils 工具包

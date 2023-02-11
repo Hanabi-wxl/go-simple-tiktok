@@ -5,6 +5,7 @@ import (
 	"gateway/biz/service"
 	"gateway/biz/wrappers"
 	"gateway/pkg/consts"
+	"gateway/pkg/utils"
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/etcd"
@@ -12,7 +13,12 @@ import (
 	"time"
 )
 
+func Init() {
+	utils.InitSensitiveFilter()
+}
+
 func main() {
+	Init()
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(consts.ETCDAddr),
 	)

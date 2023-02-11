@@ -4,6 +4,7 @@ import (
 	"gateway/pkg/consts"
 	"gateway/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 // JWT token验证中间件
@@ -26,7 +27,7 @@ func JWT() gin.HandlerFunc {
 			}
 		}
 		if code != 0 {
-			ginCtx.JSON(code, gin.H{
+			ginCtx.JSON(http.StatusUnauthorized, gin.H{
 				"status_code": code,
 				"status_msg":  "鉴权失败",
 			})

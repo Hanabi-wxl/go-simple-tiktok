@@ -81,10 +81,6 @@ func Login(ginCtx *gin.Context) {
 	password := ginCtx.Query("password")
 	loginReq.Username = &username
 	loginReq.Password = &password
-	if err := loginReq.Validate(); err != nil {
-		SendValidateErr(ginCtx, err)
-		return
-	}
 	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
 	response, err := coreService.UserLogin(context.Background(), &loginReq)
 	if err != nil {
@@ -126,6 +122,7 @@ func User(ginCtx *gin.Context) {
 // @param ginCtx
 func PublishAction(ginCtx *gin.Context) {
 	title := ginCtx.PostForm("title")
+	title = utils.Filter.Replace(title, '~')
 	token := ginCtx.PostForm(consts.AuthorizationKey)
 	file, err := ginCtx.FormFile("data")
 	if err != nil {

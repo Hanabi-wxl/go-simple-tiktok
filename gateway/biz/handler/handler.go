@@ -21,7 +21,7 @@ type Response struct {
 func SendServiceErr(c *gin.Context, err error) {
 	serviceError := result.ConvertServiceErr(err.Error())
 	resMap := map[string]interface{}{
-		"status_code": serviceError.Code,
+		"status_code": http.StatusBadRequest,
 		"status_msg":  serviceError.Detail,
 	}
 	c.JSON(http.StatusBadRequest, resMap)

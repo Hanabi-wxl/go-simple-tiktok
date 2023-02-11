@@ -46,3 +46,8 @@ type CommentInfo struct {
 	Content    string
 	CreateDate string
 }
+
+type Star struct {
+	UserId  int64
+	VideoId int64
+}
