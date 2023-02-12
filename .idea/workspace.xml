@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="84e2d02d-bc40-44d1-8dba-2f3276838337" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/gateway/biz/handler/relation.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/biz/handler/relation.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/biz/router/relation/relation_router.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/biz/router/relation/relation_router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gateway/pkg/consts/consts.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/pkg/consts/consts.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/relation/cmd/core/relation_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/cmd/core/relation_service.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/relation/cmd/dal/db/relation.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/cmd/dal/db/relation.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/relation/cmd/pack/pack.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/cmd/pack/pack.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/relation/pkg/consts/consts.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/pkg/consts/consts.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GOROOT" url="file://C:/Program Files/Go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2LbMZyaSOQS2MulFhq6X8k13iQh" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.go.migrated.go.modules.settings": "true",
+    "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "configurable..is.expanded": "false",
+    "configurable.GoLibrariesConfigurable.is.expanded": "true",
+    "go.import.settings.migrated": "true",
+    "go.sdk.automatically.set": "true",
+    "last_opened_file_path": "D:/MSVSCodeworkspaces/golang/go-simple-tiktok",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm"
+  }
+}]]></component>
+  <component name="RunManager" selected="Go Build.go build relation">
+    <configuration name="go build core" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="go-simple-tiktok" />
+      <working_directory value="$PROJECT_DIR$/core" />
+      <kind value="PACKAGE" />
+      <package value="core" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/core/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build gateway" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="go-simple-tiktok" />
+      <working_directory value="$PROJECT_DIR$/gateway" />
+      <kind value="PACKAGE" />
+      <package value="gateway" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/gateway/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="go-simple-tiktok" />
+      <working_directory value="$PROJECT_DIR$/gateway" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/gateway/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build relation" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="go-simple-tiktok" />
+      <working_directory value="$PROJECT_DIR$/relation" />
+      <kind value="PACKAGE" />
+      <package value="relation" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/relation/main.go" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build relation" />
+        <item itemvalue="Go Build.go build gateway" />
+        <item itemvalue="Go Build.go build core" />
+        <item itemvalue="Go Build.go build main.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ID_ORDER">
+      <list>
+        <option value="Default.Root" />
+        <option value="Default.Author" />
+        <option value="Default.Date" />
+        <option value="Default.Subject" />
+        <option value="Space.CommitStatus" />
+      </list>
+    </option>
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/gateway/biz/handler/relation.go</url>
+          <line>155</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
