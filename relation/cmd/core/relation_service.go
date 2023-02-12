@@ -26,7 +26,7 @@ func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRel
 		pack.BuildFollowResp(resp)
 	} else if actionType == 2 {
 		// 存在关注信息
-		if exit := !db.CheckFollowExit(userId, toUserId, false); exit {
+		if exit := db.CheckFollowExit(userId, toUserId, false); exit {
 			db.DelFollowAction(userId, toUserId)
 			pack.BuildFollowResp(resp)
 		} else {
