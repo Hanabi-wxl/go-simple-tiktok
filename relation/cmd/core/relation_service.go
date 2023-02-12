@@ -15,22 +15,24 @@ func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRel
 	toUserId := req.GetToUserId()
 	userId := utils.GetUserId(req.GetToken())
 	if actionType == 1 {
+		if !db.CheckUserIdExist(toUserId) {
+			return errno.UserNotExistErr
+		}
 		// 不存在关注信息
-		if exit := db.CheckFollowExit(userId, toUserId, true); !exit {
+		if !db.CheckFollowExist(userId, toUserId, true) {
 			// 直接新增关注信息
 			db.FollowAction(userId, toUserId)
 		} else {
-			// 通过更改逻辑字段再次关注
-			db.FollowActionUpdate(userId, toUserId)
+			return errno.FollowErr
 		}
 		pack.BuildFollowResp(resp)
 	} else if actionType == 2 {
 		// 存在关注信息
-		if exit := db.CheckFollowExit(userId, toUserId, false); exit {
+		if Exist := db.CheckFollowExist(userId, toUserId, false); Exist {
 			db.DelFollowAction(userId, toUserId)
 			pack.BuildFollowResp(resp)
 		} else {
-			panic(errno.ActionErr)
+			return errno.DelFollowErr
 		}
 	}
 	return nil
@@ -40,12 +42,16 @@ func (*RelationService) FollowList(_ context.Context, req *service.DouyinRelatio
 	var userList []*service.User
 	// 获取当前登录用户的 id
 	userId := utils.GetUserId(req.GetToken())
+	checkId := req.GetUserId()
+	if !db.CheckUserIdExist(checkId) {
+		return errno.UserNotExistErr
+	}
 	// 返回用户的关注列表（id)
-	followIdList := db.GetFollowUserIdList(userId)
+	followIdList := db.GetFollowUserIdList(checkId)
 	for _, fid := range followIdList {
 		var su service.User
 		ub := db.GetUserInfoById(fid)
-		uf := db.GetFollowInfoById(fid)
+		uf := db.GetUserFollowInfo(checkId, userId)
 		su.Id = &ub.UserId
 		su.Name = &ub.Name
 		su.FollowCount = &uf.FollowCount
@@ -67,6 +73,9 @@ func (*RelationService) FollowerList(_ context.Context, req *service.DouyinRelat
 		userId = claims.UserId
 	}
 	checkId := req.GetUserId()
+	if !db.CheckUserIdExist(checkId) {
+		return errno.UserNotExistErr
+	}
 	// 获取粉丝
 	followers := db.GetFollowerList(checkId)
 	for _, follower := range followers {
@@ -87,7 +96,10 @@ func (*RelationService) FriendList(_ context.Context, req *service.DouyinRelatio
 	var friendInfo model.Friend
 	var friendInfos []model.Friend
 	userId := req.GetUserId()
-	// "朋友"可理解为筛选后的用户的粉丝
+	if !db.CheckUserIdExist(userId) {
+		return errno.UserNotExistErr
+	}
+	// 朋友为筛选后的用户的粉丝
 	friendList := db.GetFollowerFriendList(userId)
 	for _, friend := range friendList {
 		userinfo := db.GetUserInfoById(friend.FollowerId)
@@ -108,6 +120,22 @@ func (*RelationService) FriendList(_ context.Context, req *service.DouyinRelatio
 }
 
 func (*RelationService) MessageAction(_ context.Context, req *service.DouyinMessageActionRequest, resp *service.DouyinMessageActionResponse) error {
+	actionType := req.GetActionType()
+	toUserId := req.GetToUserId()
+	userId := utils.GetUserId(req.GetToken())
+	content := req.GetContent()
+
+	// 发送消息操作
+	if actionType == 1 {
+		// 检查发送对象是否存在，若 exit = true，则对象不存在，返回报错；若为 false，则发送消息
+		if exit := db.CheckUserExist(toUserId); exit {
+			return errno.UserNotExistErr
+		} else {
+			db.SendMessage(userId, toUserId, content)
+			pack.BuildMessageActionResp(resp)
+		}
+	}
+
 	return nil
 }
 

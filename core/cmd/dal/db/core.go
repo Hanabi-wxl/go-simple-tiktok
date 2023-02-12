@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-// CheckUserExit
+// CheckUserExist
 // @Description: 检查用户名是否存在
 // @auth sinre 2023-02-09 16:42:25
 // @param username 用户名
 // @return bool true为存在
-func CheckUserExit(username string) bool {
+func CheckUserExist(username string) bool {
 	var user model.User
 	if err := DB.Where("name = ?", username).First(&user).Error; err == gorm.ErrRecordNotFound {
 		return false
@@ -21,12 +21,12 @@ func CheckUserExit(username string) bool {
 	return true
 }
 
-// CheckUserIdExit
+// CheckUserIdExist
 // @Description: 检查用户id是否存在
 // @auth sinre 2023-02-11 18:20:03
 // @param id 用户id
 // @return bool 存在标志
-func CheckUserIdExit(id int64) bool {
+func CheckUserIdExist(id int64) bool {
 	var user model.User
 	if err := DB.First(&user, id).Error; err == gorm.ErrRecordNotFound {
 		return false

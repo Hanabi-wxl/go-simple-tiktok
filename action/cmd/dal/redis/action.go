@@ -6,13 +6,13 @@ import (
 	"strconv"
 )
 
-// CheckUserIdExitInStar
+// CheckUserIdExistInStar
 // @Description: 检查是否存在userId
 // @auth sinre 2023-02-10 21:04:53
 // @param ctx 上下文
 // @param uid 用户id
 // @return bool 存在标志
-func CheckUserIdExitInStar(suid string) bool {
+func CheckUserIdExistInStar(suid string) bool {
 	if n, err := RdStar.Exists(rdContext, suid).Result(); n > 0 {
 		if err != nil {
 			log.Println(err.Error())
@@ -31,11 +31,14 @@ func CheckUserIdExitInStar(suid string) bool {
 // @param vid 视频id
 // @return bool 保存成功
 func AddVideoIdInStar(suid string, vid int64) bool {
-	if _, err := RdStar.SAdd(rdContext, suid, vid).Result(); err != nil {
-		log.Println(err.Error())
-		return false
+	if n, err := RdStar.SAdd(rdContext, suid, vid).Result(); n > 0 {
+		if err != nil {
+			log.Println(err.Error())
+			return false
+		}
+		return true
 	}
-	return true
+	return false
 }
 
 // RemoveVideoIdInStar
@@ -44,9 +47,16 @@ func AddVideoIdInStar(suid string, vid int64) bool {
 // @param ctx 上下文
 // @param uid 用户id
 // @param vid 视频id
-func RemoveVideoIdInStar(suid string, vid int64) {
-	if _, err := RdStar.SRem(rdContext, suid, vid).Result(); err != nil {
-		log.Println(err.Error())
+func RemoveVideoIdInStar(suid string, vid int64) bool {
+	if n, err := RdStar.SRem(rdContext, suid, vid).Result(); n > 0 {
+		if err != nil {
+			log.Println(err.Error())
+			return false
+		} else {
+			return true
+		}
+	} else {
+		return false
 	}
 }
 
@@ -102,13 +112,13 @@ func GetVideoIdsInStar(suid string) (ids []int64) {
 	return ids
 }
 
-// CheckVideoIdExitInStars
+// CheckVideoIdExistInStars
 // @Description: 检查是否存在Key: videoId
 // @auth sinre 2023-02-10 23:31:53
 // @param ctx 上下文
 // @param svid videoId
 // @return bool 存在标志
-func CheckVideoIdExitInStars(svid string) bool {
+func CheckVideoIdExistInStars(svid string) bool {
 	if n, err := RdStars.Exists(rdContext, svid).Result(); n > 0 {
 		if err != nil {
 			log.Println(err.Error())

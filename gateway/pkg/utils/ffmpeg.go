@@ -46,18 +46,6 @@ var (
 	defaultImageSuffix = ".jpg"
 )
 
-func ChangeVideoDefaultSuffix(suffix string) {
-	defaultVideoSuffix = suffix
-}
-
-func ChangeImageDefaultSuffix(suffix string) {
-	defaultImageSuffix = suffix
-}
-
-func GetDefaultImageSuffix() string {
-	return defaultImageSuffix
-}
-
 func paramJoin(s1, s2 string) string {
 	return fmt.Sprintf(" %s %s ", s1, s2)
 }

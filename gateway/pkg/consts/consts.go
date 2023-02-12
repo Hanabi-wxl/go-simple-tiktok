@@ -36,9 +36,9 @@ var (
 )
 
 /*
-  请求、操作：10xx
-  文件：30xx
-  权限：40xx
+请求、操作：10xx
+文件：30xx
+权限：40xx
 */
 const (
 	ParamErrCode         = 1001
@@ -47,7 +47,6 @@ const (
 	SaveFileTempErrCode  = 3003
 	VideoCaptureErrCode  = 3004
 	FileToLargeErrCode   = 3005
-	FileNotFoundErrCode  = 3006
 	NoTokenErrCode       = 4000
 	AuthorizationErrCode = 4001
 )

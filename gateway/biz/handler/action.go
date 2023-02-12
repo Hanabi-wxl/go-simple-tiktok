@@ -23,7 +23,7 @@ func FavoriteAction(ginCtx *gin.Context) {
 	token := ginCtx.Query(consts.AuthorizationKey)
 	vvid, err1 := strconv.Atoi(ginCtx.Query("video_id"))
 	ttid, err2 := strconv.Atoi(ginCtx.Query("action_type"))
-	if err1 != nil || err2 != nil {
+	if err1 != nil || err2 != nil || (ttid != 1 && ttid != 2) {
 		SendClientErr(ginCtx, consts.ParamErr)
 		return
 	}
@@ -65,6 +65,10 @@ func FavoriteList(ginCtx *gin.Context) {
 		SendServiceErr(ginCtx, err)
 		return
 	}
+	if len(response.VideoList) == 0 {
+		SendMap(ginCtx, response, "video_list")
+		return
+	}
 	ginCtx.JSON(http.StatusOK, response)
 }
 
@@ -94,12 +98,12 @@ func CommentAction(ginCtx *gin.Context) {
 		cid = int64(ccid)
 	}
 	tt, err3 := strconv.Atoi(ginCtx.Query("action_type"))
-	if err1 != nil || err3 != nil {
+	if err1 != nil || err3 != nil || (tt != 1 && tt != 2) {
 		SendClientErr(ginCtx, consts.ParamErr)
 		return
 	}
 	videoId = int64(vid)
-	commentId = int64(cid)
+	commentId = cid
 	acType = int32(tt)
 
 	favLsReq.Token = &token
@@ -113,6 +117,10 @@ func CommentAction(ginCtx *gin.Context) {
 
 	if err != nil {
 		SendServiceErr(ginCtx, err)
+		return
+	}
+	if response.Comment == nil {
+		SendMap(ginCtx, response, "comment")
 		return
 	}
 	ginCtx.JSON(http.StatusOK, response)

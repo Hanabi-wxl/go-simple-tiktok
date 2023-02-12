@@ -53,7 +53,7 @@ func SendValidateErr(c *gin.Context, err error) {
 	c.JSON(http.StatusBadRequest, resMap)
 }
 
-// SendMap map响应 弃用
+// SendMap map响应
 func SendMap(c *gin.Context, response interface{}, strs ...string) {
 	var resMap map[string]interface{}
 	if marshalContent, err := json.Marshal(response); err != nil {
@@ -73,5 +73,5 @@ func SendMap(c *gin.Context, response interface{}, strs ...string) {
 	for i := 0; i < len(strs); i++ {
 		resMap[strs[i]] = nil
 	}
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, resMap)
 }

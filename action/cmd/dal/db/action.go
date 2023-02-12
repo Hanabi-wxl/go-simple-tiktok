@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-// CheckVideoExit
+// CheckVideoExist
 // @Description: 根据id检查video是否存在
 // @auth sinre 2023-02-09 16:28:33
 // @param vid 视频id
 // @return bool 返回结果
-func CheckVideoExit(vid int64) bool {
+func CheckVideoExist(vid int64) bool {
 	var count int64
 	if err := DB.Model(&model.Video{}).Where("video_id", vid).Count(&count).Error; err != nil {
 		panic(errno.DbSelectErr)
@@ -21,6 +21,19 @@ func CheckVideoExit(vid int64) bool {
 		return true
 	}
 	return false
+}
+
+// CheckUserIdExist
+// @Description: 检查用户id是否存在
+// @auth sinre 2023-02-11 18:20:03
+// @param id 用户id
+// @return bool 存在标志
+func CheckUserIdExist(id int64) bool {
+	var user model.User
+	if err := DB.First(&user, id).Error; err == gorm.ErrRecordNotFound {
+		return false
+	}
+	return true
 }
 
 // GetStarUserById
@@ -45,7 +58,7 @@ func CreateFavorite(vid, uid int64) {
 	if err := DB.Where("user_id = ? AND video_id = ?", uid, vid).First(&fav).Error; err == gorm.ErrRecordNotFound {
 		fav.VideoId = vid
 		fav.UserId = uid
-		if err := DB.Create(&fav).Error; err != nil {
+		if err1 := DB.Create(&fav).Error; err1 != nil {
 			panic(errno.DbInsertErr)
 		}
 	}
@@ -61,8 +74,12 @@ func DeleteFavorite(vid, uid int64) {
 		UserId:  uid,
 		VideoId: vid,
 	}
-	if err := DB.Where("user_id = ? AND video_id = ?", uid, vid).Delete(&fav).Error; err != nil {
-		panic(errno.DbUpdateErr)
+	if err := DB.Where("user_id = ? AND video_id = ?", uid, vid).First(&fav).Error; err != gorm.ErrRecordNotFound {
+		fav.VideoId = vid
+		fav.UserId = uid
+		if err1 := DB.Where("user_id = ? AND video_id = ?", uid, vid).Delete(&fav).Error; err1 != nil {
+			panic(errno.DbUpdateErr)
+		}
 	}
 }
 
@@ -196,6 +213,19 @@ func CreateComment(userId int64, videoId int64, comment string) model.Comment {
 		panic(errno.DbInsertErr)
 	}
 	return commentModel
+}
+
+// CheckCommentExist
+// @Description: 查看评论是否存在
+// @auth sinre 2023-02-12 16:32:33
+// @param cid 评论id
+// @return bool 存在标志
+func CheckCommentExist(cid int64) bool {
+	var Comment model.Comment
+	if err := DB.First(&Comment, cid).Error; err == gorm.ErrRecordNotFound {
+		return false
+	}
+	return true
 }
 
 // DeleteComment

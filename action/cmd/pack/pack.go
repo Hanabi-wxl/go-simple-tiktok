@@ -17,21 +17,23 @@ func BuildFavoriteListResp(resp *service.DouyinFavoriteListResponse, infos []*se
 	resp.VideoList = infos
 }
 
-func BuildCommentActionResp(resp *service.DouyinCommentActionResponse, comment model.Comment, userInfo model.User, followInfo model.FollowInfo) {
-	formatTime := comment.CommentTime.Format("01-02")
+func BuildCommentActionResp(resp *service.DouyinCommentActionResponse, comment *model.Comment, userInfo *model.User, followInfo model.FollowInfo) {
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
-	resp.Comment = &service.Comment{
-		Id:         &comment.Id,
-		Content:    &comment.CommentText,
-		CreateDate: &formatTime,
-		User: &service.User{
-			Id:            &userInfo.UserId,
-			Name:          &userInfo.Name,
-			FollowCount:   &followInfo.FollowCount,
-			FollowerCount: &followInfo.FollowerCount,
-			IsFollow:      &followInfo.IsFollow,
-		},
+	if comment != nil && userInfo != nil {
+		formatTime := comment.CommentTime.Format("01-02")
+		resp.Comment = &service.Comment{
+			Id:         &comment.Id,
+			Content:    &comment.CommentText,
+			CreateDate: &formatTime,
+			User: &service.User{
+				Id:            &userInfo.UserId,
+				Name:          &userInfo.Name,
+				FollowCount:   &followInfo.FollowCount,
+				FollowerCount: &followInfo.FollowerCount,
+				IsFollow:      &followInfo.IsFollow,
+			},
+		}
 	}
 }
 

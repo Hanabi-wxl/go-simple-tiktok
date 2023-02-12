@@ -65,8 +65,8 @@ func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp
 func (*CoreService) UserRegister(_ context.Context, req *service.DouyinUserRegisterRequest, resp *service.DouyinUserRegisterResponse) error {
 	username := req.GetUsername()
 	password := req.GetPassword()
-	if exit := db.CheckUserExit(username); exit {
-		return errno.UserAlreadyExitErr
+	if exist := db.CheckUserExist(username); exist {
+		return errno.UserAlreadyExistErr
 	} else {
 		db.CreateUser(username, password)
 		user := db.GetUserInfoByUsername(username)
@@ -78,8 +78,8 @@ func (*CoreService) UserRegister(_ context.Context, req *service.DouyinUserRegis
 func (*CoreService) UserLogin(_ context.Context, req *service.DouyinUserLoginRequest, resp *service.DouyinUserLoginResponse) error {
 	var user model.User
 	user.Name = req.GetUsername()
-	if exit := db.CheckUserExit(user.Name); !exit {
-		return errno.UserNotExitErr
+	if exist := db.CheckUserExist(user.Name); !exist {
+		return errno.UserNotExistErr
 	}
 	userInfo := db.GetUserInfoByUsername(user.Name)
 	// 设置为数据库内的加密密码
@@ -98,12 +98,12 @@ func (*CoreService) User(_ context.Context, req *service.DouyinUserRequest, resp
 	checkUserId := req.GetUserId()
 	userId := utils.GetUserId(req.GetToken())
 	// 获取用户信息
-	if exit := db.CheckUserIdExit(checkUserId); exit {
+	if exist := db.CheckUserIdExist(checkUserId); exist {
 		checkUserInfo := db.GetUserInfoById(checkUserId)
 		followInfo := db.GetUserFollowInfo(checkUserId, userId)
 		pack.BuildUserResp(resp, &checkUserInfo, followInfo)
 	} else {
-		return errno.UserNotExitErr
+		return errno.UserNotExistErr
 	}
 
 	return nil
@@ -134,8 +134,8 @@ func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishLis
 	checkId := req.GetUserId()
 	// 用户id
 	userId = utils.GetUserId(req.GetToken())
-	if exit := db.CheckUserIdExit(checkId); !exit {
-		return errno.UserNotExitErr
+	if exist := db.CheckUserIdExist(checkId); !exist {
+		return errno.UserNotExistErr
 	}
 	// 作者信息
 	infoById := db.GetUserInfoById(checkId)

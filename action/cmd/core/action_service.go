@@ -21,16 +21,19 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 	uid := utils.GetUserId(token)
 	suid := strconv.Itoa(int(uid))
 	svid := strconv.Itoa(int(videoId))
-	if exit := db.CheckVideoExit(videoId); exit {
+	if exist := db.CheckVideoExist(videoId); exist {
 		body, _ := json.Marshal(model.MQStar{UserId: uid, VideoId: videoId})
 		if acType == 1 {
 			// 维护redis数据库: Star
 			// 查询是否存在userId
-			if exit1 := redis.CheckUserIdExitInStar(suid); exit1 {
+			if exist1 := redis.CheckUserIdExistInStar(suid); exist1 {
 				// 存在Key: userId则创建点赞信息至redis
-				redis.AddVideoIdInStar(suid, videoId)
-				// 使用mq同步信息至db
-				mq.StarAddQue.Publish(body)
+				if save := redis.AddVideoIdInStar(suid, videoId); save {
+					// 使用mq同步信息至db
+					mq.StarAddQue.Publish(body)
+				} else {
+					return errno.RepeatStar
+				}
 			} else {
 				// 不存在Key则新增Key
 				redis.CreateUserIdInStar(suid)
@@ -54,7 +57,7 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 			}
 			// 维护redis数据库: Stars
 			// 查询是否存在videoId
-			if exit1 := redis.CheckVideoIdExitInStars(svid); exit1 {
+			if exist1 := redis.CheckVideoIdExistInStars(svid); exist1 {
 				// 点赞后将userId保存至stars数据库
 				redis.AddUserIdInStars(svid, uid)
 			} else {
@@ -76,7 +79,7 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 				}
 			}
 		} else {
-			if exit1 := redis.CheckUserIdExitInStar(suid); exit1 {
+			if exist1 := redis.CheckUserIdExistInStar(suid); exist1 {
 				// 删除redis中的点赞信息
 				redis.RemoveVideoIdInStar(suid, videoId)
 				// 同步删除信息至db
@@ -100,7 +103,7 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 				mq.StarDelQue.Publish(body)
 			}
 
-			if exit1 := redis.CheckVideoIdExitInStars(svid); exit1 {
+			if exist1 := redis.CheckVideoIdExistInStars(svid); exist1 {
 				redis.RemoveUserIdInStars(svid, uid)
 			} else {
 				// 添加Key
@@ -120,7 +123,7 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 			}
 		}
 	} else {
-		return errno.VideoNotExit
+		return errno.VideoNotExist
 	}
 	pack.BuildFavoriteActionResp(resp)
 	return nil
@@ -137,6 +140,9 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	)
 	token := req.GetToken()
 	checkId := req.GetUserId()
+	if existUser := db.CheckUserIdExist(checkId); !existUser {
+		return errno.UserNotExistErr
+	}
 	userId = utils.GetUserId(token)
 	suid := strconv.Itoa(int(userId))
 	scid := strconv.Itoa(int(checkId))
@@ -150,7 +156,7 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	author.FollowCount = &followInfo.FollowerCount
 	author.FollowerCount = &followInfo.FollowerCount
 
-	if exit := redis.CheckUserIdExitInStar(scid); exit {
+	if exist := redis.CheckUserIdExistInStar(scid); exist {
 		// 查询视频作者喜欢列表
 		fids = redis.GetVideoIdsInStar(scid)
 		// 查询视频信息
@@ -183,39 +189,41 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 		// 添加过期时间
 		redis.AddExpireInStar(suid)
 		// 获取用户所有点赞信息 保存至redis
-		favoriteList := db.GetFavoriteListByUserId(userId)
-		for _, likeVideoId := range favoriteList {
-			if save := redis.AddVideoIdInStar(suid, likeVideoId.VideoId); !save {
-				// 如果redis保存出现问题则删掉该Key
-				redis.DeleteUserIdInStar(suid)
+		favoriteList := db.GetFavoriteListByUserId(checkId)
+		if len(favoriteList) > 0 {
+			for _, likeVideoId := range favoriteList {
+				if save := redis.AddVideoIdInStar(suid, likeVideoId.VideoId); !save {
+					// 如果redis保存出现问题则删掉该Key
+					redis.DeleteUserIdInStar(suid)
+				}
 			}
-		}
-		for i := 0; i < len(favoriteList); i++ {
-			fids = append(fids, favoriteList[i].VideoId)
-		}
-		// 查询视频信息
-		videos = db.GetFavoriteVideos(fids)
-		for _, video := range videos {
-			// 视频信息
-			videoInfo.Id = &video.VideoId
-			videoInfo.Title = &video.Title
-			videoInfo.PlayUrl = &video.PlayUrl
-			videoInfo.CoverUrl = &video.CoverUrl
-			authId := video.Author
-			// 点赞评论信息
-			svid := strconv.Itoa(int(video.VideoId))
-			stars := redis.GetUserIdsInStars(svid)
-			comments := redis.GetCommentIdsInComments(svid)
-			fc := int64(len(stars))
-			cc := int64(len(comments))
-			videoInfo.FavoriteCount = &fc
-			videoInfo.CommentCount = &cc
-			checkFavorite := db.CheckFavorite(userId, authId)
-			videoInfo.IsFavorite = &checkFavorite
-			// 作者信息
-			videoInfo.Author = &author
-			// 合并到全部所需信息
-			videoInfos = append(videoInfos, &videoInfo)
+			for i := 0; i < len(favoriteList); i++ {
+				fids = append(fids, favoriteList[i].VideoId)
+			}
+			// 查询视频信息
+			videos = db.GetFavoriteVideos(fids)
+			for _, video := range videos {
+				// 视频信息
+				videoInfo.Id = &video.VideoId
+				videoInfo.Title = &video.Title
+				videoInfo.PlayUrl = &video.PlayUrl
+				videoInfo.CoverUrl = &video.CoverUrl
+				authId := video.Author
+				// 点赞评论信息
+				svid := strconv.Itoa(int(video.VideoId))
+				stars := redis.GetUserIdsInStars(svid)
+				comments := redis.GetCommentIdsInComments(svid)
+				fc := int64(len(stars))
+				cc := int64(len(comments))
+				videoInfo.FavoriteCount = &fc
+				videoInfo.CommentCount = &cc
+				checkFavorite := db.CheckFavorite(userId, authId)
+				videoInfo.IsFavorite = &checkFavorite
+				// 作者信息
+				videoInfo.Author = &author
+				// 合并到全部所需信息
+				videoInfos = append(videoInfos, &videoInfo)
+			}
 		}
 	}
 	pack.BuildFavoriteListResp(resp, videoInfos)
@@ -229,18 +237,16 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 		svid       = strconv.Itoa(int(videoId))
 		acType     = req.GetActionType()
 		commentId  = req.GetCommentId()
-		comment    model.Comment
-		userInfo   model.User
 		followInfo model.FollowInfo
 	)
 
 	token := req.GetToken()
 	userId = utils.GetUserId(token)
-	if exit := db.CheckVideoExit(videoId); exit {
+	if exist := db.CheckVideoExist(videoId); exist {
 		if acType == 1 {
-			comment = db.CreateComment(userId, videoId, req.GetCommentText())
+			comment := db.CreateComment(userId, videoId, req.GetCommentText())
 			// 判断是否存在key: videoId
-			if exit1 := redis.CheckVideoIdInComments(svid); exit1 {
+			if exist1 := redis.CheckVideoIdInComments(svid); exist1 {
 				if save := redis.AddCommentIdInComments(svid, comment.Id); !save {
 					redis.DeleteVideoIdInComments(svid)
 				}
@@ -255,31 +261,35 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 					}
 				}
 			}
-			userInfo = db.GetUserInfoById(userId)
+			userInfo := db.GetUserInfoById(userId)
 			followInfo = db.GetUserFollowInfo(userId, userId)
-			pack.BuildCommentActionResp(resp, comment, userInfo, followInfo)
+			pack.BuildCommentActionResp(resp, &comment, &userInfo, followInfo)
 		} else if acType == 2 {
-			// 判断是否存在key: videoId
-			body, _ := json.Marshal(&model.MQComment{CommentId: commentId})
-			if exit1 := redis.CheckVideoIdInComments(svid); exit1 {
-				redis.RemoveCommentIdInComments(svid, commentId)
-				mq.CommentDelQue.Publish(body)
-			} else {
-				// 创建key: videoId
-				redis.AddVideoIdInComments(svid)
-				redis.AddExpireInComments(svid)
-				commentList := db.GetCommentList(videoId)
-				for i := 0; i < len(commentList); i++ {
-					if save := redis.AddCommentIdInComments(svid, commentList[i].Id); !save {
-						redis.DeleteVideoIdInComments(svid)
+			if existc := db.CheckCommentExist(commentId); existc {
+				// 判断是否存在key: videoId
+				body, _ := json.Marshal(&model.MQComment{CommentId: commentId})
+				if exist1 := redis.CheckVideoIdInComments(svid); exist1 {
+					redis.RemoveCommentIdInComments(svid, commentId)
+					mq.CommentDelQue.Publish(body)
+				} else {
+					// 创建key: videoId
+					redis.AddVideoIdInComments(svid)
+					redis.AddExpireInComments(svid)
+					commentList := db.GetCommentList(videoId)
+					for i := 0; i < len(commentList); i++ {
+						if save := redis.AddCommentIdInComments(svid, commentList[i].Id); !save {
+							redis.DeleteVideoIdInComments(svid)
+						}
 					}
+					mq.CommentDelQue.Publish(body)
 				}
-				mq.CommentDelQue.Publish(body)
+				pack.BuildCommentActionResp(resp, nil, nil, followInfo)
+			} else {
+				return errno.CommentNotExistErr
 			}
-			pack.BuildCommentActionResp(resp, comment, userInfo, followInfo)
 		}
 	} else {
-		return errno.VideoNotExit
+		return errno.VideoNotExist
 	}
 	return nil
 }
@@ -292,8 +302,8 @@ func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentL
 
 	videoId := req.GetVideoId()
 	svid := strconv.Itoa(int(videoId))
-	if vexit := db.CheckVideoExit(videoId); vexit {
-		if exit := redis.CheckVideoIdInComments(svid); exit {
+	if vexist := db.CheckVideoExist(videoId); vexist {
+		if exist := redis.CheckVideoIdInComments(svid); exist {
 			ids := redis.GetCommentIdsInComments(svid)
 			for i := 0; i < len(ids); i++ {
 				var commentInfo service.Comment
@@ -343,7 +353,7 @@ func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentL
 			}
 		}
 	} else {
-		return errno.VideoNotExit
+		return errno.VideoNotExist
 	}
 	pack.BuildCommentListResp(resp, commentInfos)
 	return nil

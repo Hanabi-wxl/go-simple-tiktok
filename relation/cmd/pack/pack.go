@@ -54,3 +54,8 @@ func BuildFriendListResp(resp *service.DouyinRelationFriendListResponse, infos [
 	}
 	resp.UserList = users
 }
+
+func BuildMessageActionResp(resp *service.DouyinMessageActionResponse) {
+	resp.StatusCode = &consts.DefaultCode
+	resp.StatusMsg = &consts.DefaultMsg
+}

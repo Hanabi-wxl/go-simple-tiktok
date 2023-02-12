@@ -2,12 +2,12 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"gateway/biz/service"
 	"gateway/pkg/consts"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 // RelationAction
@@ -23,7 +23,7 @@ func RelationAction(ginCtx *gin.Context) {
 	toUserId := int64(uid)
 
 	act, err := strconv.Atoi(ginCtx.Query("action_type"))
-	if err != nil {
+	if err != nil || (act != 1 && act != 2) {
 		SendClientErr(ginCtx, consts.ParamErr)
 		return
 	}
@@ -51,7 +51,6 @@ func RelationAction(ginCtx *gin.Context) {
 // @param ginCtx
 func RelationList(ginCtx *gin.Context) {
 	uid, err := strconv.Atoi(ginCtx.Query("user_id"))
-	fmt.Println("tyt uid = ", uid)
 	if err != nil {
 		SendClientErr(ginCtx, consts.ParamErr)
 		return
@@ -68,6 +67,10 @@ func RelationList(ginCtx *gin.Context) {
 	response, err := relationService.FollowList(context.Background(), &relReq)
 	if err != nil {
 		SendServiceErr(ginCtx, err)
+		return
+	}
+	if response.UserList != nil {
+		SendMap(ginCtx, response, "user_list")
 		return
 	}
 	ginCtx.JSON(http.StatusOK, response)
@@ -120,5 +123,53 @@ func FriendList(ginCtx *gin.Context) {
 		SendServiceErr(ginCtx, err)
 		return
 	}
+	if response.UserList == nil {
+		SendMap(ginCtx, response, "user_list")
+		return
+	}
 	ginCtx.JSON(http.StatusOK, response)
+}
+
+// MessageAction
+// @Description: 发送消息
+// @auth since 2023-02-11 15:37:52
+// @param ginCtx
+func MessageAction(ginCtx *gin.Context) {
+	var msgAct service.DouyinMessageActionRequest
+	to_user_id, err := strconv.Atoi(ginCtx.Query("to_user_id"))
+	if err != nil {
+		SendClientErr(ginCtx, consts.ParamErr)
+		return
+	}
+	toUserId := int64(to_user_id)
+	content := ginCtx.Query("content")
+	token := ginCtx.Query(consts.AuthorizationKey)
+	act, err := strconv.Atoi(ginCtx.Query("action_type"))
+	if err != nil {
+		SendClientErr(ginCtx, consts.ParamErr)
+		return
+	}
+	actionType := int32(act)
+
+	msgAct.ToUserId = &toUserId
+	msgAct.Token = &token
+	msgAct.ActionType = &actionType
+	msgAct.Content = &content
+
+	relationService := ginCtx.Keys[consts.RelationServiceName].(service.RelationService)
+	ctx := context.Background()
+	response, err := relationService.MessageAction(ctx, &msgAct)
+	if err != nil {
+		SendServiceErr(ginCtx, err)
+		return
+	}
+	ginCtx.JSON(http.StatusOK, response)
+
+}
+
+// Chat
+// @Description: 聊天记录
+// @auth sinre 2023-02-13 01:01:03
+// @param ginCtx
+func Chat(ginCtx *gin.Context) {
 }

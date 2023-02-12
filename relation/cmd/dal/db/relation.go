@@ -1,8 +1,10 @@
 package db
 
 import (
+	"gorm.io/gorm"
 	"relation/cmd/model"
 	"relation/pkg/errno"
+	"time"
 )
 
 // GetFollowerList
@@ -44,11 +46,11 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 		checkFollow   int64
 	)
 	// 关注数
-	if err := DB.Model(&followModel).Where("follow_id = ?", checkUserId).Count(&followCount).Error; err != nil {
+	if err := DB.Model(&followModel).Where("follower_id = ?", checkUserId).Count(&followCount).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
 	// 粉丝数
-	if err := DB.Model(&followModel).Where("follower_id = ?", checkUserId).Count(&followerCount).Error; err != nil {
+	if err := DB.Model(&followModel).Where("follow_id = ?", checkUserId).Count(&followerCount).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
 	// 是否已关注
@@ -95,8 +97,8 @@ func GetLastMessage(fid, uid int64) (mes model.Message) {
 	return mes
 }
 
-// CheckFollowExit 检查两人关注信息是否存在
-func CheckFollowExit(userId, toUserId int64, isUnscoped bool) bool {
+// CheckFollowExist 检查两人关注信息是否存在
+func CheckFollowExist(userId, toUserId int64, isUnscoped bool) bool {
 	/*
 		isUnscoped: 是否添加 Unscoped()
 	*/
@@ -105,15 +107,28 @@ func CheckFollowExit(userId, toUserId int64, isUnscoped bool) bool {
 		count int64
 	)
 	if isUnscoped {
-		if err := DB.Unscoped().Model(&fol).Where(&model.Follow{FollowerId: userId, FollowId: toUserId}).Count(&count).Error; err != nil {
+		if err := DB.Unscoped().Model(&fol).Where("follower_id = ? AND follow_id = ?", userId, toUserId).Count(&count).Error; err != nil {
 			panic(errno.DbSelectErr)
 		}
 	} else {
-		if err := DB.Model(&fol).Where(&model.Follow{FollowerId: userId, FollowId: toUserId}).Count(&count).Error; err != nil {
+		if err := DB.Model(&fol).Where("follower_id = ? AND follow_id = ?", userId, toUserId).Count(&count).Error; err != nil {
 			panic(errno.DbSelectErr)
 		}
 	}
 	return count > 0
+}
+
+// CheckUserIdExist
+// @Description: 检查用户id是否存在
+// @auth sinre 2023-02-11 18:20:03
+// @param id 用户id
+// @return bool 存在标志
+func CheckUserIdExist(id int64) bool {
+	var user model.User
+	if err := DB.First(&user, id).Error; err == gorm.ErrRecordNotFound {
+		return false
+	}
+	return true
 }
 
 // FollowAction 关注某人 (新增)
@@ -129,7 +144,7 @@ func FollowAction(userId int64, toUserId int64) {
 // FollowActionUpdate 关注某人 (更改逻辑字段)
 func FollowActionUpdate(userId int64, toUserId int64) {
 	var follow model.Follow
-	if err := DB.Unscoped().Model(&follow).Where(&model.Follow{FollowerId: userId, FollowId: toUserId}).Find(&follow).Error; err != nil {
+	if err := DB.Unscoped().Model(&follow).Where("follower_id = ? AND follow_id = ?", userId, toUserId).Find(&follow).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
 	follow.IsDeleted = 0
@@ -182,4 +197,38 @@ func GetFollowInfoById(userId int64) model.FollowInfo {
 	followInfo.FollowCount = followCount
 	followInfo.FollowerCount = followerCount
 	return followInfo
+}
+
+// CheckUserExit
+// @Description: 检查用户名是否存在
+// @param userId 用户Id
+// @return bool false为存在
+func CheckUserExist(userId int64) bool {
+	var user model.User
+	var count int64
+	if err := DB.Model(&user).Where("user_id = ?", userId).Count(&count).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	if count > 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+// SendMessage
+// @Description: 发送消息
+// @param from_user_id 消息发送方id
+// @param to_user_id 消息接收方id
+// @param content 消息内容
+func SendMessage(from_user_id, to_user_id int64, content string) {
+	var message model.Message
+	message.FromUserId = from_user_id
+	message.ToUserId = to_user_id
+	message.Content = content
+	message.SendTime = time.Now()
+
+	if err := DB.Create(&message).Error; err != nil {
+		panic(errno.DbInsertErr)
+	}
 }
