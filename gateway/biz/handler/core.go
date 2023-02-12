@@ -21,7 +21,7 @@ func Feed(ginCtx *gin.Context) {
 	var feedReq service.DouyinFeedRequest
 	var latestTime int64
 	latestTimeStr := ginCtx.Query("latest_time")
-	if len(latestTimeStr) == 1 || len(latestTimeStr) == 0 {
+	if len(latestTimeStr) != len(consts.DefaultTime) {
 		latestTime = time.Now().UnixMilli()
 	} else {
 		atoi, _ := strconv.Atoi(latestTimeStr)
@@ -125,6 +125,14 @@ func PublishAction(ginCtx *gin.Context) {
 	title = utils.Filter.Replace(title, '~')
 	token := ginCtx.PostForm(consts.AuthorizationKey)
 	file, err := ginCtx.FormFile("data")
+	if file == nil {
+		SendClientErr(ginCtx, consts.FileNotFoundErrErr)
+		return
+	}
+	if file.Size > consts.MaxFileSize {
+		SendClientErr(ginCtx, consts.FileToLargeErr)
+		return
+	}
 	if err != nil {
 		SendClientErr(ginCtx, consts.PostFormVideoErr)
 		return

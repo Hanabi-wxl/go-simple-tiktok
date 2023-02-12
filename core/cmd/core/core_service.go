@@ -98,9 +98,14 @@ func (*CoreService) User(_ context.Context, req *service.DouyinUserRequest, resp
 	checkUserId := req.GetUserId()
 	userId := utils.GetUserId(req.GetToken())
 	// 获取用户信息
-	checkUserInfo := db.GetUserInfoById(checkUserId)
-	followInfo := db.GetUserFollowInfo(checkUserId, userId)
-	pack.BuildUserResp(resp, &checkUserInfo, followInfo)
+	if exit := db.CheckUserIdExit(checkUserId); exit {
+		checkUserInfo := db.GetUserInfoById(checkUserId)
+		followInfo := db.GetUserFollowInfo(checkUserId, userId)
+		pack.BuildUserResp(resp, &checkUserInfo, followInfo)
+	} else {
+		return errno.UserNotExitErr
+	}
+
 	return nil
 }
 
@@ -129,7 +134,9 @@ func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishLis
 	checkId := req.GetUserId()
 	// 用户id
 	userId = utils.GetUserId(req.GetToken())
-
+	if exit := db.CheckUserIdExit(checkId); !exit {
+		return errno.UserNotExitErr
+	}
 	// 作者信息
 	infoById := db.GetUserInfoById(checkId)
 	author.Name = infoById.Name

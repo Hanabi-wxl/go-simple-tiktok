@@ -4,6 +4,7 @@ import (
 	"core/cmd/model"
 	"core/pkg/consts"
 	"core/pkg/errno"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -14,15 +15,23 @@ import (
 // @return bool true为存在
 func CheckUserExit(username string) bool {
 	var user model.User
-	var count int64
-	if err := DB.Model(&user).Where("name = ?", username).Count(&count).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	if count > 0 {
-		return true
-	} else {
+	if err := DB.Where("name = ?", username).First(&user).Error; err == gorm.ErrRecordNotFound {
 		return false
 	}
+	return true
+}
+
+// CheckUserIdExit
+// @Description: 检查用户id是否存在
+// @auth sinre 2023-02-11 18:20:03
+// @param id 用户id
+// @return bool 存在标志
+func CheckUserIdExit(id int64) bool {
+	var user model.User
+	if err := DB.First(&user, id).Error; err == gorm.ErrRecordNotFound {
+		return false
+	}
+	return true
 }
 
 // CreateUser
@@ -111,18 +120,19 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 }
 
 // FeedVideos
-// @Description: 获取视频溜
+// @Description: 获取视频流
 // @auth sinre 2023-02-09 16:45:47
 // @param time 时间戳
 // @return videos 视频信息
 // @return lastTime 较晚发布的视频的时间戳
 func FeedVideos(time time.Time) (videos []model.Video, lastTime int64) {
-	if err := DB.Where("upload_time < ?", time).
-		Order("upload_time desc").Limit(consts.VideoLimit).Find(&videos).Error; err != nil {
+	if err := DB.Where("upload_time < ?", time).Order("upload_time desc").Limit(consts.VideoLimit).Find(&videos).Error; err != nil {
 		panic(errno.DbSelectErr)
 	}
-	if len(videos) > 0 {
+	if len(videos) > 1 {
 		lastTime = videos[consts.VideoLimit-1].UploadTime.UnixMilli()
+	} else if len(videos) == 1 {
+		lastTime = videos[0].UploadTime.UnixMilli()
 	}
 	return videos, lastTime
 }

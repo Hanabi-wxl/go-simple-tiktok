@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"gateway/biz/router"
 	"gateway/biz/service"
 	"gateway/biz/wrappers"
@@ -19,6 +20,7 @@ func Init() {
 
 func main() {
 	Init()
+	fmt.Println(time.Now().UnixMilli())
 	etcdReg := etcd.NewRegistry(
 		registry.Addrs(consts.ETCDAddr),
 	)

@@ -110,6 +110,7 @@ func (*RelationService) FriendList(_ context.Context, req *service.DouyinRelatio
 func (*RelationService) MessageAction(_ context.Context, req *service.DouyinMessageActionRequest, resp *service.DouyinMessageActionResponse) error {
 	return nil
 }
+
 func (*RelationService) MessageChat(_ context.Context, req *service.DouyinMessageChatRequest, resp *service.DouyinMessageChatResponse) error {
 	return nil
 }
