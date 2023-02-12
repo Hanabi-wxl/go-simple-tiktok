@@ -3,6 +3,7 @@ package db
 import (
 	"relation/cmd/model"
 	"relation/pkg/errno"
+	"time"
 )
 
 // GetFollowerList
@@ -182,4 +183,38 @@ func GetFollowInfoById(userId int64) model.FollowInfo {
 	followInfo.FollowCount = followCount
 	followInfo.FollowerCount = followerCount
 	return followInfo
+}
+
+// CheckUserExit
+// @Description: 检查用户名是否存在
+// @param userId 用户Id
+// @return bool false为存在
+func CheckUserExist(userId int64) bool {
+	var user model.User
+	var count int64
+	if err := DB.Model(&user).Where("user_id = ?", userId).Count(&count).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	if count > 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+// SendMessage
+// @Description: 发送消息
+// @param from_user_id 消息发送方id
+// @param to_user_id 消息接收方id
+// @param content 消息内容
+func SendMessage(from_user_id, to_user_id int64, content string) {
+	var message model.Message
+	message.FromUserId = from_user_id
+	message.ToUserId = to_user_id
+	message.Content = content
+	message.SendTime = time.Now()
+
+	if err := DB.Create(&message).Error; err != nil {
+		panic(errno.DbInsertErr)
+	}
 }

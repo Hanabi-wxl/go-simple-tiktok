@@ -26,7 +26,7 @@ func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRel
 		pack.BuildFollowResp(resp)
 	} else if actionType == 2 {
 		// 存在关注信息
-		if exit := db.CheckFollowExit(userId, toUserId, false); exit {
+		if exit := !db.CheckFollowExit(userId, toUserId, false); exit {
 			db.DelFollowAction(userId, toUserId)
 			pack.BuildFollowResp(resp)
 		} else {
@@ -108,6 +108,22 @@ func (*RelationService) FriendList(_ context.Context, req *service.DouyinRelatio
 }
 
 func (*RelationService) MessageAction(_ context.Context, req *service.DouyinMessageActionRequest, resp *service.DouyinMessageActionResponse) error {
+	actionType := req.GetActionType()
+	toUserId := req.GetToUserId()
+	userId := utils.GetUserId(req.GetToken())
+	content := req.GetContent()
+
+	// 发送消息操作
+	if actionType == 1 {
+		// 检查发送对象是否存在，若 exit = true，则对象不存在，返回报错；若为 false，则发送消息
+		if exit := db.CheckUserExist(toUserId); exit {
+			return errno.UserNotExitErr
+		} else {
+			db.SendMessage(userId, toUserId, content)
+			pack.BuildMessageActionResp(resp)
+		}
+	}
+
 	return nil
 }
 func (*RelationService) MessageChat(_ context.Context, req *service.DouyinMessageChatRequest, resp *service.DouyinMessageChatResponse) error {

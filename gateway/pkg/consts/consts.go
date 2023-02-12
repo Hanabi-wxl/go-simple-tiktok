@@ -6,7 +6,7 @@ import (
 
 const (
 	ETCDAddr            = "127.0.0.1:2379"
-	GateWayAddr         = "192.168.1.8:8000" // "127.0.0.1:8000"
+	GateWayAddr         = "127.0.0.1:8000" // "192.168.1.8:8000"
 	CoreClientName      = "coreService.client"
 	ActionClientName    = "actionService.client"
 	RelationClientName  = "relationService.client"
@@ -17,7 +17,7 @@ const (
 	AuthorizationKey    = "token"
 	FfmpegPath          = "/bin/ffmpeg.exe"
 	StaticFilePath      = "/static/"
-	ServerIP            = "192.168.1.8" // "127.0.0.1"
+	ServerIP            = "127.0.0.1" // "192.168.1.8"
 	ServerPort          = "8000"
 	SensitiveDictPath   = "./pkg/doc/dict.txt"
 )
@@ -34,9 +34,9 @@ var (
 )
 
 /*
-  请求、操作：10xx
-  文件：30xx
-  权限：40xx
+请求、操作：10xx
+文件：30xx
+权限：40xx
 */
 const (
 	ParamErrCode         = 1001
