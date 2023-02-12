@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="84e2d02d-bc40-44d1-8dba-2f3276838337" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/default.etcd/member/snap/db" beforeDir="false" afterPath="$PROJECT_DIR$/default.etcd/member/snap/db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/biz/handler/relation.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/biz/handler/relation.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/biz/router/relation/relation_router.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/biz/router/relation/relation_router.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gateway/pkg/consts/consts.go" beforeDir="false" afterPath="$PROJECT_DIR$/gateway/pkg/consts/consts.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/relation/cmd/core/relation_service.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/cmd/core/relation_service.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/relation/cmd/dal/db/relation.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/cmd/dal/db/relation.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/relation/cmd/pack/pack.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/cmd/pack/pack.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/relation/pkg/consts/consts.go" beforeDir="false" afterPath="$PROJECT_DIR$/relation/pkg/consts/consts.go" afterDir="false" />
-    </list>
+    <list default="true" id="84e2d02d-bc40-44d1-8dba-2f3276838337" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -128,7 +118,7 @@
         <line-breakpoint enabled="true" type="DlvLineBreakpoint">
           <url>file://$PROJECT_DIR$/gateway/biz/handler/relation.go</url>
           <line>155</line>
-          <option name="timeStamp" value="1" />
+          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
