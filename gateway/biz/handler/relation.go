@@ -166,10 +166,3 @@ func MessageAction(ginCtx *gin.Context) {
 	ginCtx.JSON(http.StatusOK, response)
 
 }
-
-// Chat
-// @Description: 聊天记录
-// @auth sinre 2023-02-13 01:01:03
-// @param ginCtx
-func Chat(ginCtx *gin.Context) {
-}

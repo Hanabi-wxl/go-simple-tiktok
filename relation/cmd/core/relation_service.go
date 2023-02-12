@@ -28,7 +28,7 @@ func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRel
 		pack.BuildFollowResp(resp)
 	} else if actionType == 2 {
 		// 存在关注信息
-		if Exist := db.CheckFollowExist(userId, toUserId, false); Exist {
+		if exist := db.CheckFollowExist(userId, toUserId, false); exist {
 			db.DelFollowAction(userId, toUserId)
 			pack.BuildFollowResp(resp)
 		} else {
@@ -138,7 +138,6 @@ func (*RelationService) MessageAction(_ context.Context, req *service.DouyinMess
 
 	return nil
 }
-
 func (*RelationService) MessageChat(_ context.Context, req *service.DouyinMessageChatRequest, resp *service.DouyinMessageChatResponse) error {
 	return nil
 }
