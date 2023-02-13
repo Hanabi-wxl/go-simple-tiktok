@@ -138,6 +138,25 @@ func (*RelationService) MessageAction(_ context.Context, req *service.DouyinMess
 
 	return nil
 }
+
 func (*RelationService) MessageChat(_ context.Context, req *service.DouyinMessageChatRequest, resp *service.DouyinMessageChatResponse) error {
+	var chatss []*service.Message
+	toUserId := req.GetToUserId()
+	userId := utils.GetUserId(req.GetToken())
+	if !db.CheckUserIdExist(toUserId) {
+		return errno.UserNotExistErr
+	}
+	chats := db.GetChats(toUserId, userId)
+	for i := 0; i < len(chats); i++ {
+		var chat service.Message
+		chat.Id = &chats[i].Id
+		chat.ToUserId = &chats[i].ToUserId
+		chat.FromUserId = &chats[i].FromUserId
+		chat.Content = &chats[i].Content
+		st := chats[i].SendTime.Format("2006-01-02 03:04:05")
+		chat.CreateTime = &st
+		chatss = append(chatss, &chat)
+	}
+	pack.BuildMessageChatResp(resp, chatss)
 	return nil
 }

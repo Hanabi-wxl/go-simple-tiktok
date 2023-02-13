@@ -143,9 +143,13 @@ func MessageAction(ginCtx *gin.Context) {
 	}
 	toUserId := int64(to_user_id)
 	content := ginCtx.Query("content")
+	if len(content) == 0 {
+		SendClientErr(ginCtx, consts.NoContentErr)
+		return
+	}
 	token := ginCtx.Query(consts.AuthorizationKey)
 	act, err := strconv.Atoi(ginCtx.Query("action_type"))
-	if err != nil {
+	if err != nil || (act != 1) {
 		SendClientErr(ginCtx, consts.ParamErr)
 		return
 	}
@@ -165,4 +169,28 @@ func MessageAction(ginCtx *gin.Context) {
 	}
 	ginCtx.JSON(http.StatusOK, response)
 
+}
+
+// Chat
+// @Description: 聊天记录
+// @auth sinre 2023-02-13 11:46:27
+// @param ginCtx
+func Chat(ginCtx *gin.Context) {
+	var msctReq service.DouyinMessageChatRequest
+	tuid, err := strconv.Atoi(ginCtx.Query("to_user_id"))
+	token := ginCtx.Query(consts.AuthorizationKey)
+	if err != nil {
+		SendClientErr(ginCtx, consts.ParamErr)
+		return
+	}
+	ttuid := int64(tuid)
+	msctReq.ToUserId = &ttuid
+	msctReq.Token = &token
+	relationService := ginCtx.Keys[consts.RelationServiceName].(service.RelationService)
+	response, err := relationService.MessageChat(context.Background(), &msctReq)
+	if err != nil {
+		SendServiceErr(ginCtx, err)
+		return
+	}
+	ginCtx.JSON(http.StatusOK, response)
 }

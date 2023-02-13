@@ -49,14 +49,16 @@ const (
 	FileToLargeErrCode   = 3005
 	NoTokenErrCode       = 4000
 	AuthorizationErrCode = 4001
+	NoContentErrCode     = 4001
 )
 
 var (
-	ParamErr           = result.NewClientError(ParamErrCode, "参数异常")
-	PostFormVideoErr   = result.NewClientError(PostFormVideoErrCode, "获取文件异常")
-	VideoTypeErrErr    = result.NewClientError(VideoTypeErrCode, "视频格式不支持")
-	SaveFileTempErr    = result.NewClientError(SaveFileTempErrCode, "暂存文件失败")
-	VideoCaptureErr    = result.NewClientError(VideoCaptureErrCode, "视频截图失败")
-	FileToLargeErr     = result.NewClientError(FileToLargeErrCode, "视频最大支持30MB")
-	FileNotFoundErrErr = result.NewClientError(FileToLargeErrCode, "未找到视频文件")
+	ParamErr         = result.NewClientError(ParamErrCode, "参数异常")
+	PostFormVideoErr = result.NewClientError(PostFormVideoErrCode, "获取文件异常")
+	VideoTypeErrErr  = result.NewClientError(VideoTypeErrCode, "视频格式不支持")
+	SaveFileTempErr  = result.NewClientError(SaveFileTempErrCode, "暂存文件失败")
+	VideoCaptureErr  = result.NewClientError(VideoCaptureErrCode, "视频截图失败")
+	FileToLargeErr   = result.NewClientError(FileToLargeErrCode, "视频最大支持30MB")
+	FileNotFoundErr  = result.NewClientError(FileToLargeErrCode, "未找到视频文件")
+	NoContentErr     = result.NewClientError(NoContentErrCode, "发送内容为空")
 )

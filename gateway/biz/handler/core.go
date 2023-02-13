@@ -126,7 +126,7 @@ func PublishAction(ginCtx *gin.Context) {
 	token := ginCtx.PostForm(consts.AuthorizationKey)
 	file, err := ginCtx.FormFile("data")
 	if file == nil {
-		SendClientErr(ginCtx, consts.FileNotFoundErrErr)
+		SendClientErr(ginCtx, consts.FileNotFoundErr)
 		return
 	}
 	if file.Size > consts.MaxFileSize {

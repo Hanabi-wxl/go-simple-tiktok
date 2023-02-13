@@ -199,7 +199,7 @@ func GetFollowInfoById(userId int64) model.FollowInfo {
 	return followInfo
 }
 
-// CheckUserExit
+// CheckUserExist
 // @Description: 检查用户名是否存在
 // @param userId 用户Id
 // @return bool false为存在
@@ -231,4 +231,11 @@ func SendMessage(from_user_id, to_user_id int64, content string) {
 	if err := DB.Create(&message).Error; err != nil {
 		panic(errno.DbInsertErr)
 	}
+}
+
+func GetChats(tuid, usid int64) (msgs []model.Message) {
+	if err := DB.Where("to_user_id = ? AND from_user_id = ?", tuid, usid).Find(&msgs).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return msgs
 }

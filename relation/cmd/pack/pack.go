@@ -59,3 +59,9 @@ func BuildMessageActionResp(resp *service.DouyinMessageActionResponse) {
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
 }
+
+func BuildMessageChatResp(resp *service.DouyinMessageChatResponse, chats []*service.Message) {
+	resp.StatusCode = &consts.DefaultCode
+	resp.StatusMsg = &consts.DefaultMsg
+	resp.MessageList = chats
+}

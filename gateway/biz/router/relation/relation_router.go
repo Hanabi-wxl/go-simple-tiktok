@@ -20,7 +20,7 @@ func Register(engin *gin.Engine) {
 		message := douyin.Group("/message")
 		{
 			message.POST("/action", handler.MessageAction)
-			message.GET("/chat")
+			message.GET("/chat", handler.Chat)
 		}
 	}
 }
