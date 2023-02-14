@@ -69,7 +69,7 @@ func RelationList(ginCtx *gin.Context) {
 		SendServiceErr(ginCtx, err)
 		return
 	}
-	if response.UserList != nil {
+	if response.UserList == nil {
 		SendMap(ginCtx, response, "user_list")
 		return
 	}

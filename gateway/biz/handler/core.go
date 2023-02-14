@@ -153,7 +153,7 @@ func PublishAction(ginCtx *gin.Context) {
 		return
 	}
 	// 截取封面
-	err = utils.Capture(name, true)
+	err = utils.Capture(name, false)
 	if err != nil {
 		SendClientErr(ginCtx, consts.VideoCaptureErr)
 		return

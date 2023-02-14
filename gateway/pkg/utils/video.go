@@ -13,7 +13,7 @@ func GetFileUrl(fileName string) string {
 	return base
 }
 
-// NewFileName 根据userId+用户发布的视频数量连接成独一无二的文件名
+// NewFileName 使用uuid作为文件名
 func NewFileName() string {
 	uu := uuid.New()
 	return uu.String()

@@ -54,12 +54,16 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 		panic(errno.DbSelectErr)
 	}
 	// 是否已关注
-	if err := DB.Model(&followModel).Where("follow_id = ? AND follower_id = ?", checkUserId, userId).
-		Count(&checkFollow).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	if checkFollow == 1 {
+	if checkUserId == userId {
 		followInfo.IsFollow = true
+	} else {
+		if err := DB.Model(&followModel).Where("follow_id = ? AND follower_id = ?", checkUserId, userId).
+			Count(&checkFollow).Error; err != nil {
+			panic(errno.DbSelectErr)
+		}
+		if checkFollow == 1 {
+			followInfo.IsFollow = true
+		}
 	}
 	followInfo.FollowCount = followCount
 	followInfo.FollowerCount = followerCount
@@ -98,24 +102,12 @@ func GetLastMessage(fid, uid int64) (mes model.Message) {
 }
 
 // CheckFollowExist 检查两人关注信息是否存在
-func CheckFollowExist(userId, toUserId int64, isUnscoped bool) bool {
-	/*
-		isUnscoped: 是否添加 Unscoped()
-	*/
-	var (
-		fol   model.Follow
-		count int64
-	)
-	if isUnscoped {
-		if err := DB.Unscoped().Model(&fol).Where("follower_id = ? AND follow_id = ?", userId, toUserId).Count(&count).Error; err != nil {
-			panic(errno.DbSelectErr)
-		}
-	} else {
-		if err := DB.Model(&fol).Where("follower_id = ? AND follow_id = ?", userId, toUserId).Count(&count).Error; err != nil {
-			panic(errno.DbSelectErr)
-		}
+func CheckFollowExist(userId, toUserId int64) bool {
+	var fol model.Follow
+	if err := DB.Model(&fol).Where("follower_id = ? AND follow_id = ?", userId, toUserId).First(&fol).Error; err == gorm.ErrRecordNotFound {
+		return false
 	}
-	return count > 0
+	return true
 }
 
 // CheckUserIdExist

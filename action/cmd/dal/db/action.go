@@ -123,12 +123,16 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 		panic(errno.DbSelectErr)
 	}
 	// 是否已关注
-	if err := DB.Model(&followModel).Where("follow_id = ? AND follower_id = ?", checkUserId, userId).
-		Count(&checkFollow).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	if checkFollow == 1 {
+	if checkUserId == userId {
 		followInfo.IsFollow = true
+	} else {
+		if err := DB.Model(&followModel).Where("follow_id = ? AND follower_id = ?", checkUserId, userId).
+			Count(&checkFollow).Error; err != nil {
+			panic(errno.DbSelectErr)
+		}
+		if checkFollow == 1 {
+			followInfo.IsFollow = true
+		}
 	}
 	followInfo.FollowCount = followCount
 	followInfo.FollowerCount = followerCount

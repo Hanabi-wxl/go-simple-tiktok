@@ -133,7 +133,6 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	var (
 		videos     []model.Video
 		videoInfos []*service.Video
-		videoInfo  service.Video
 		author     service.User
 		userId     int64
 		fids       []int64
@@ -161,15 +160,16 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 		fids = redis.GetVideoIdsInStar(scid)
 		// 查询视频信息
 		videos = db.GetFavoriteVideos(fids)
-		for _, video := range videos {
+		for i := 0; i < len(videos); i++ {
 			// 视频信息
-			videoInfo.Id = &video.VideoId
-			videoInfo.Title = &video.Title
-			videoInfo.PlayUrl = &video.PlayUrl
-			videoInfo.CoverUrl = &video.CoverUrl
-			authId := video.Author
+			var videoInfo service.Video
+			videoInfo.Id = &videos[i].VideoId
+			videoInfo.Title = &videos[i].Title
+			videoInfo.PlayUrl = &videos[i].PlayUrl
+			videoInfo.CoverUrl = &videos[i].CoverUrl
+			authId := videos[i].Author
 			// 点赞评论信息
-			svid := strconv.Itoa(int(video.VideoId))
+			svid := strconv.Itoa(int(videos[i].VideoId))
 			stars := redis.GetUserIdsInStars(svid)
 			comments := redis.GetCommentIdsInComments(svid)
 			fc := int64(len(stars))
@@ -202,15 +202,16 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 			}
 			// 查询视频信息
 			videos = db.GetFavoriteVideos(fids)
-			for _, video := range videos {
+			for i := 0; i < len(videos); i++ {
 				// 视频信息
-				videoInfo.Id = &video.VideoId
-				videoInfo.Title = &video.Title
-				videoInfo.PlayUrl = &video.PlayUrl
-				videoInfo.CoverUrl = &video.CoverUrl
-				authId := video.Author
+				var videoInfo service.Video
+				videoInfo.Id = &videos[i].VideoId
+				videoInfo.Title = &videos[i].Title
+				videoInfo.PlayUrl = &videos[i].PlayUrl
+				videoInfo.CoverUrl = &videos[i].CoverUrl
+				authId := videos[i].Author
 				// 点赞评论信息
-				svid := strconv.Itoa(int(video.VideoId))
+				svid := strconv.Itoa(int(videos[i].VideoId))
 				stars := redis.GetUserIdsInStars(svid)
 				comments := redis.GetCommentIdsInComments(svid)
 				fc := int64(len(stars))

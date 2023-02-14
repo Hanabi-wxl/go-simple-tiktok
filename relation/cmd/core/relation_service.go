@@ -19,7 +19,7 @@ func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRel
 			return errno.UserNotExistErr
 		}
 		// 不存在关注信息
-		if !db.CheckFollowExist(userId, toUserId, true) {
+		if !db.CheckFollowExist(userId, toUserId) {
 			// 直接新增关注信息
 			db.FollowAction(userId, toUserId)
 		} else {
@@ -28,7 +28,7 @@ func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRel
 		pack.BuildFollowResp(resp)
 	} else if actionType == 2 {
 		// 存在关注信息
-		if exist := db.CheckFollowExist(userId, toUserId, false); exist {
+		if exist := db.CheckFollowExist(userId, toUserId); exist {
 			db.DelFollowAction(userId, toUserId)
 			pack.BuildFollowResp(resp)
 		} else {

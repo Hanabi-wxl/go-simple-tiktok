@@ -107,12 +107,16 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 		panic(errno.DbSelectErr)
 	}
 	// 是否已关注
-	if err := DB.Model(&followModel).Where("follow_id = ? AND follower_id = ?", checkUserId, userId).
-		Count(&checkFollow).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	if checkFollow == 1 {
+	if checkUserId == userId {
 		followInfo.IsFollow = true
+	} else {
+		if err := DB.Model(&followModel).Where("follow_id = ? AND follower_id = ?", checkUserId, userId).
+			Count(&checkFollow).Error; err != nil {
+			panic(errno.DbSelectErr)
+		}
+		if checkFollow == 1 {
+			followInfo.IsFollow = true
+		}
 	}
 	followInfo.FollowCount = followCount
 	followInfo.FollowerCount = followerCount
@@ -120,7 +124,7 @@ func GetUserFollowInfo(checkUserId, userId int64) model.FollowInfo {
 }
 
 // FeedVideos
-// @Description: 获取视频流
+// @Description: 获取视频流 返回按投稿时间倒序的视频列表
 // @auth sinre 2023-02-09 16:45:47
 // @param time 时间戳
 // @return videos 视频信息
@@ -130,9 +134,7 @@ func FeedVideos(time time.Time) (videos []model.Video, lastTime int64) {
 		panic(errno.DbSelectErr)
 	}
 	if len(videos) > 1 {
-		lastTime = videos[consts.VideoLimit-1].UploadTime.UnixMilli()
-	} else if len(videos) == 1 {
-		lastTime = videos[0].UploadTime.UnixMilli()
+		lastTime = videos[len(videos)-1].UploadTime.UnixMilli()
 	}
 	return videos, lastTime
 }
