@@ -31,17 +31,20 @@ type Follow struct {
 }
 
 type Message struct {
-	Id         int64     `gorm:"column:id" json:"id"`
-	FromUserId int64     `gorm:"column:from_user_id" json:"from_user_id"`
-	ToUserId   int64     `gorm:"column:to_user_id" json:"to_user_id"`
-	Content    string    `gorm:"column:content" json:"content"`
-	SendTime   time.Time `gorm:"column:send_time" json:"send_time"`
+	Id           int64     `gorm:"column:id" json:"id"`
+	FromUserId   int64     `gorm:"column:from_user_id" json:"from_user_id"`
+	ToUserId     int64     `gorm:"column:to_user_id" json:"to_user_id"`
+	Content      string    `gorm:"column:content" json:"content"`
+	SenderRead   int8      `gorm:"column:sender_read" json:"sender_read"`
+	ReceiverRead int8      `gorm:"column:receiver_read" json:"receiver_read"`
+	SendTime     time.Time `gorm:"column:send_time;default:CURRENT_TIMESTAMP" json:"send_time"`
 }
 
 type User struct {
-	UserId   int64  `gorm:"column:user_id;autoIncrement" json:"user_id"`
+	UserId   int64  `gorm:"column:user_id;primaryKey" json:"user_id"`
 	Password string `gorm:"column:password" json:"password"`
 	Name     string `gorm:"column:name" json:"name"`
+	Avatar   string `gorm:"column:avatar" json:"avatar"`
 }
 
 type Video struct {

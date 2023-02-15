@@ -9,7 +9,7 @@ import (
 )
 
 func GetFileUrl(fileName string) string {
-	base := fmt.Sprintf("http://%s:%s/static/%s", consts.ServerIP, consts.ServerPort, fileName)
+	base := fmt.Sprintf("%s%s", consts.VideoFileUrl, fileName)
 	return base
 }
 

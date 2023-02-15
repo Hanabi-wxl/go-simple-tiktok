@@ -60,6 +60,8 @@ message douyin_user_login_response {
   optional string status_msg = 2; // 返回状态描述
   required int64 user_id = 3; // 用户id
   required string token = 4; // 用户鉴权token
+  required string avatar = 5; // 用户头像
+  required string background_image = 6; // 背景
 }
 
 message douyin_user_register_request {
@@ -72,6 +74,8 @@ message douyin_user_register_response {
   optional string status_msg = 2; // 返回状态描述
   required int64 user_id = 3; // 用户id
   required string token = 4; // 用户鉴权token
+  required string avatar = 5; // 用户头像
+  required string background_image = 6;
 }
 
 service CoreService {

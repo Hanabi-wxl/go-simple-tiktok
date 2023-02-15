@@ -59,6 +59,7 @@ func Register(ginCtx *gin.Context) {
 	}
 	regReq.Username = &username
 	regReq.Password = &password
+
 	coreService := ginCtx.Keys[consts.CoreServiceName].(service.CoreService)
 	response, err := coreService.UserRegister(context.Background(), &regReq)
 	if err != nil {

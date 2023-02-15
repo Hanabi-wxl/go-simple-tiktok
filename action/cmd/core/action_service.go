@@ -7,6 +7,7 @@ import (
 	"action/cmd/mq"
 	"action/cmd/pack"
 	"action/cmd/service"
+	"action/pkg/consts"
 	"action/pkg/errno"
 	"action/pkg/utils"
 	"context"
@@ -149,9 +150,12 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	infoById := db.GetUserInfoById(checkId)
 	author.Name = &infoById.Name
 	author.Id = &checkId
+	author.Avatar = &infoById.Avatar
 	// 查询自己时userId == checkId
 	followInfo := db.GetUserFollowInfo(checkId, userId)
 	author.IsFollow = &followInfo.IsFollow
+	url := consts.BackgroundImgUrl
+	author.BackgroundImage = &url
 	author.FollowCount = &followInfo.FollowerCount
 	author.FollowerCount = &followInfo.FollowerCount
 
@@ -321,6 +325,9 @@ func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentL
 				commentInfo.CreateDate = &format
 				commentInfo.User.Id = &userInfo.UserId
 				commentInfo.User.Name = &userInfo.Name
+				url := consts.BackgroundImgUrl
+				commentInfo.User.Avatar = &userInfo.Avatar
+				commentInfo.User.BackgroundImage = &url
 				commentInfo.User.FollowCount = &followInfo.FollowCount
 				commentInfo.User.FollowerCount = &followInfo.FollowerCount
 				commentInfo.User.IsFollow = &followInfo.IsFollow

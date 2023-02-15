@@ -5,9 +5,11 @@ option go_package = "./;idl";
 message User {
   required int64 id = 1; // 用户id
   required string name = 2; // 用户名称
-  optional int64 follow_count = 3; // 关注总数
-  optional int64 follower_count = 4; // 粉丝总数
-  required bool is_follow = 5; // true-已关注，false-未关注
+  required string avatar = 3; // 头像
+  required string background_image = 4; // 背景图
+  optional int64 follow_count = 5; // 关注总数
+  optional int64 follower_count = 6; // 粉丝总数
+  required bool is_follow = 7; // true-已关注，false-未关注
 }
 
 message Message {
@@ -15,7 +17,7 @@ message Message {
   required int64 to_user_id = 2; // 该消息接收者的id
   required int64 from_user_id =3; // 该消息发送者的id
   required string content = 4; // 消息内容
-  optional string create_time = 5; // 消息创建时间
+  optional int64 create_time = 5; // 消息创建时间
 }
 
 message FriendUser {
@@ -26,4 +28,5 @@ message FriendUser {
   required bool is_follow = 5; // true-已关注，false-未关注
   optional string message = 6; // 和该好友的最新聊天消息
   required int64 msgType = 7; // message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
+  required string avatar = 8; // 头像
 }

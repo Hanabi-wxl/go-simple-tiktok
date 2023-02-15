@@ -25,8 +25,10 @@ type ActionInfo struct {
 // Author
 // @Description: 作者信息
 type Author struct {
-	Id   int64
-	Name string
+	Id              int64
+	Name            string
+	Avatar          string
+	BackgroundImage string
 	FollowInfo
 }
 

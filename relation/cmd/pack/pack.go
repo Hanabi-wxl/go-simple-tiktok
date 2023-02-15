@@ -1,7 +1,6 @@
 package pack
 
 import (
-	"relation/cmd/model"
 	"relation/cmd/service"
 	"relation/pkg/consts"
 )
@@ -17,42 +16,16 @@ func BuildFollowListResp(resp *service.DouyinRelationFollowListResponse, userLis
 	resp.UserList = userList
 }
 
-func BuildRelationFollowerListResp(resp *service.DouyinRelationFollowerListResponse, infos []model.Author) {
+func BuildRelationFollowerListResp(resp *service.DouyinRelationFollowerListResponse, infos []*service.User) {
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
-	var users []*service.User
-	for i := 0; i < len(infos); i++ {
-		info := infos[i]
-		user := &service.User{
-			Id:            &info.Id,
-			Name:          &info.Name,
-			FollowCount:   &info.FollowCount,
-			FollowerCount: &info.FollowerCount,
-			IsFollow:      &info.IsFollow,
-		}
-		users = append(users, user)
-	}
-	resp.UserList = users
+	resp.UserList = infos
 }
 
-func BuildFriendListResp(resp *service.DouyinRelationFriendListResponse, infos []model.Friend) {
+func BuildFriendListResp(resp *service.DouyinRelationFriendListResponse, infos []*service.FriendUser) {
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
-	var users []*service.FriendUser
-	for i := 0; i < len(infos); i++ {
-		info := infos[i]
-		user := &service.FriendUser{
-			Id:            &info.Id,
-			Name:          &info.Name,
-			FollowCount:   &info.FollowCount,
-			FollowerCount: &info.FollowerCount,
-			IsFollow:      &info.IsFollow,
-			Message:       &info.Message,
-			MsgType:       &info.MessageType,
-		}
-		users = append(users, user)
-	}
-	resp.UserList = users
+	resp.UserList = infos
 }
 
 func BuildMessageActionResp(resp *service.DouyinMessageActionResponse) {

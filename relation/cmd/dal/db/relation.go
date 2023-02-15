@@ -4,7 +4,6 @@ import (
 	"gorm.io/gorm"
 	"relation/cmd/model"
 	"relation/pkg/errno"
-	"time"
 )
 
 // GetFollowerList
@@ -218,16 +217,17 @@ func SendMessage(from_user_id, to_user_id int64, content string) {
 	message.FromUserId = from_user_id
 	message.ToUserId = to_user_id
 	message.Content = content
-	message.SendTime = time.Now()
-
+	message.SenderRead = 1
 	if err := DB.Create(&message).Error; err != nil {
 		panic(errno.DbInsertErr)
 	}
 }
 
-func GetChats(tuid, usid int64) (msgs []model.Message) {
-	if err := DB.Where("to_user_id = ? AND from_user_id = ?", tuid, usid).Find(&msgs).Error; err != nil {
-		panic(errno.DbSelectErr)
+func GetChats(tuid, usid int64) (msgs model.Message) {
+	if err := DB.Where("to_user_id = ? AND from_user_id = ? AND receiver_read = 0", usid, tuid).First(&msgs).Error; err != gorm.ErrRecordNotFound {
+		if err := DB.Model(&model.Message{}).Where("id = ?", msgs.Id).Update("receiver_read", "1").Error; err != nil {
+			panic(errno.DbUpdateErr)
+		}
 	}
 	return msgs
 }

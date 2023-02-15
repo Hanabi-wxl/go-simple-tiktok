@@ -12,6 +12,9 @@ func BuildUserRegResp(resp *service.DouyinUserRegisterResponse, user *model.User
 	resp.UserId = id
 
 	resp.Token = &token
+	resp.Avatar = &user.Avatar
+	url := consts.BackgroundImgUrl
+	resp.BackgroundImage = &url
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
 }
@@ -21,8 +24,10 @@ func BuildUserLoginResp(resp *service.DouyinUserLoginResponse, user *model.User)
 
 	id := &(user.UserId)
 	resp.UserId = id
-
+	url := consts.BackgroundImgUrl
 	resp.Token = &token
+	resp.Avatar = &user.Avatar
+	resp.BackgroundImage = &url
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
 }
@@ -33,71 +38,31 @@ func BuildPublishActionResp(resp *service.DouyinPublishActionResponse) {
 }
 
 func BuildUserResp(resp *service.DouyinUserResponse, checkUserInfo *model.User, followInfo model.FollowInfo) {
-	var (
-		uuser = service.User{
-			Id:            &checkUserInfo.UserId,
-			Name:          &checkUserInfo.Name,
-			FollowCount:   &followInfo.FollowCount,
-			FollowerCount: &followInfo.FollowerCount,
-			IsFollow:      &followInfo.IsFollow,
-		}
-	)
+	url := consts.BackgroundImgUrl
+	uuser := service.User{
+		Id:              &checkUserInfo.UserId,
+		Name:            &checkUserInfo.Name,
+		Avatar:          &checkUserInfo.Avatar,
+		BackgroundImage: &url,
+		FollowCount:     &followInfo.FollowCount,
+		FollowerCount:   &followInfo.FollowerCount,
+		IsFollow:        &followInfo.IsFollow,
+	}
+
 	resp.User = &uuser
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
 }
 
-func BuildFeedResp(resp *service.DouyinFeedResponse, infos []model.VideoInfo, lastTime int64) {
-	var videoInfos []*service.Video
-	for i := 0; i < len(infos); i++ {
-		info := infos[i]
-		videoInfo := &service.Video{
-			Id: &info.Id,
-			Author: &service.User{
-				Id:            &info.Author.Id,
-				Name:          &info.Author.Name,
-				FollowCount:   &info.Author.FollowCount,
-				FollowerCount: &info.Author.FollowerCount,
-				IsFollow:      &info.Author.IsFollow,
-			},
-			PlayUrl:       &info.PlayUrl,
-			CoverUrl:      &info.CoverUrl,
-			FavoriteCount: &info.FavoriteCount,
-			CommentCount:  &info.CommentCount,
-			IsFavorite:    &info.IsFavorite,
-			Title:         &info.Title,
-		}
-		videoInfos = append(videoInfos, videoInfo)
-	}
+func BuildFeedResp(resp *service.DouyinFeedResponse, infos []*service.Video, lastTime int64) {
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
 	resp.NextTime = &lastTime
-	resp.VideoList = videoInfos
+	resp.VideoList = infos
 }
 
-func BuildPublishListResp(resp *service.DouyinPublishListResponse, infos []model.VideoInfo) {
-	var videoInfos []*service.Video
-	for i := 0; i < len(infos); i++ {
-		info := infos[i]
-		videoInfo := &service.Video{
-			Id: &info.Id,
-			Author: &service.User{
-				Id:            &info.Author.Id,
-				Name:          &info.Author.Name,
-				FollowCount:   &info.Author.FollowCount,
-				FollowerCount: &info.Author.FollowerCount,
-				IsFollow:      &info.Author.IsFollow,
-			},
-			PlayUrl:       &info.PlayUrl,
-			CoverUrl:      &info.CoverUrl,
-			FavoriteCount: &info.FavoriteCount,
-			CommentCount:  &info.CommentCount,
-			IsFavorite:    &info.IsFavorite,
-			Title:         &info.Title,
-		}
-		videoInfos = append(videoInfos, videoInfo)
-	}
+func BuildPublishListResp(resp *service.DouyinPublishListResponse, infos []*service.Video) {
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
-	resp.VideoList = videoInfos
+	resp.VideoList = infos
 }

@@ -39,9 +39,10 @@ func CheckUserIdExist(id int64) bool {
 // @auth sinre 2023-02-09 16:42:45
 // @param username 用户名
 // @param password 密码
-func CreateUser(username, password string) {
+func CreateUser(username, password, avatar string) {
 	var user model.User
 	user.Name = username
+	user.Avatar = avatar
 	// 生成加密密码
 	_ = user.SetPassword(password)
 	if err := DB.Create(&user).Error; err != nil {

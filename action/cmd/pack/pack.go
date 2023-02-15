@@ -20,6 +20,7 @@ func BuildFavoriteListResp(resp *service.DouyinFavoriteListResponse, infos []*se
 func BuildCommentActionResp(resp *service.DouyinCommentActionResponse, comment *model.Comment, userInfo *model.User, followInfo model.FollowInfo) {
 	resp.StatusCode = &consts.DefaultCode
 	resp.StatusMsg = &consts.DefaultMsg
+	url := consts.BackgroundImgUrl
 	if comment != nil && userInfo != nil {
 		formatTime := comment.CommentTime.Format("01-02")
 		resp.Comment = &service.Comment{
@@ -27,11 +28,13 @@ func BuildCommentActionResp(resp *service.DouyinCommentActionResponse, comment *
 			Content:    &comment.CommentText,
 			CreateDate: &formatTime,
 			User: &service.User{
-				Id:            &userInfo.UserId,
-				Name:          &userInfo.Name,
-				FollowCount:   &followInfo.FollowCount,
-				FollowerCount: &followInfo.FollowerCount,
-				IsFollow:      &followInfo.IsFollow,
+				Id:              &userInfo.UserId,
+				Name:            &userInfo.Name,
+				Avatar:          &userInfo.Avatar,
+				BackgroundImage: &url,
+				FollowCount:     &followInfo.FollowCount,
+				FollowerCount:   &followInfo.FollowerCount,
+				IsFollow:        &followInfo.IsFollow,
 			},
 		}
 	}
