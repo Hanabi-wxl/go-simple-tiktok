@@ -51,7 +51,7 @@ func (*RelationService) FollowList(_ context.Context, req *service.DouyinRelatio
 	for _, fid := range followIdList {
 		var su service.User
 		ub := db.GetUserInfoById(fid)
-		uf := db.GetUserFollowInfo(checkId, userId)
+		uf := db.GetUserFollowInfo(fid, userId)
 		su.Id = &ub.UserId
 		su.Name = &ub.Name
 		su.Avatar = &ub.Avatar

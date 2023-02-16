@@ -7,7 +7,7 @@ import (
 const (
 	//ETCDAddr            = "192.168.64.3:2379"
 	//GateWayAddr         = "0.0.0.0:8000"
-	//VideoFileUrl         = "http://tiktok.sinre.top/static/video"
+	//VideoFileUrl         = "http://tiktok.sinre.top/static/video/"
 	//FfmpegPath          = "/bin/ffmpeg"
 
 	ETCDAddr     = "127.0.0.1:2379"
@@ -23,7 +23,8 @@ const (
 	RelationServiceName = "rpcRelationService"
 	GateWayServiceName  = "httpService"
 	AuthorizationKey    = "token"
-	StaticFilePath      = "/static/"
+	StaticFilePath      = "/static/video/"
+	UploadFilePath      = "./static/video/"
 	SensitiveDictPath   = "./pkg/doc/dict.txt"
 )
 

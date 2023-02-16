@@ -8,7 +8,7 @@ import (
 
 func TestCheckFollowExit(t *testing.T) {
 	Init()
-	isPass := CheckFollowExist(1, 1, true)
+	isPass := CheckFollowExist(1, 1)
 	assert.Equal(t, true, isPass, "测试失败")
 }
 

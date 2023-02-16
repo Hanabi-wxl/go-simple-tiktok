@@ -147,7 +147,7 @@ func PublishAction(ginCtx *gin.Context) {
 	// 使用uuid作为文件名
 	name := utils.NewFileName()
 	filename := name + suffix
-	savePath := filepath.Join("./static", filename)
+	savePath := filepath.Join(consts.UploadFilePath, filename)
 	err = ginCtx.SaveUploadedFile(file, savePath)
 	if err != nil {
 		SendClientErr(ginCtx, consts.SaveFileTempErr)

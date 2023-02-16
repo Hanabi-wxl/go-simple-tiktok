@@ -136,12 +136,12 @@ func FriendList(ginCtx *gin.Context) {
 // @param ginCtx
 func MessageAction(ginCtx *gin.Context) {
 	var msgAct service.DouyinMessageActionRequest
-	to_user_id, err := strconv.Atoi(ginCtx.Query("to_user_id"))
+	toId, err := strconv.Atoi(ginCtx.Query("to_user_id"))
 	if err != nil {
 		SendClientErr(ginCtx, consts.ParamErr)
 		return
 	}
-	toUserId := int64(to_user_id)
+	toUserId := int64(toId)
 	content := ginCtx.Query("content")
 	if len(content) == 0 {
 		SendClientErr(ginCtx, consts.NoContentErr)

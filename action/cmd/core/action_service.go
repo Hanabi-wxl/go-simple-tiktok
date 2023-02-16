@@ -304,7 +304,6 @@ func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentL
 	var (
 		commentInfos []*service.Comment
 	)
-
 	videoId := req.GetVideoId()
 	svid := strconv.Itoa(int(videoId))
 	if vexist := db.CheckVideoExist(videoId); vexist {
@@ -313,7 +312,6 @@ func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentL
 			for i := 0; i < len(ids); i++ {
 				var commentInfo service.Comment
 				var user service.User
-				commentInfo.User = &user
 				comment := db.GetCommentById(ids[i])
 				// 用户信息
 				userInfo := db.GetUserInfoById(comment.UserId)
@@ -323,14 +321,15 @@ func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentL
 				commentInfo.Content = &comment.CommentText
 				format := comment.CommentTime.Format("01-02")
 				commentInfo.CreateDate = &format
-				commentInfo.User.Id = &userInfo.UserId
-				commentInfo.User.Name = &userInfo.Name
+				user.Id = &userInfo.UserId
+				user.Name = &userInfo.Name
 				url := consts.BackgroundImgUrl
-				commentInfo.User.Avatar = &userInfo.Avatar
-				commentInfo.User.BackgroundImage = &url
-				commentInfo.User.FollowCount = &followInfo.FollowCount
-				commentInfo.User.FollowerCount = &followInfo.FollowerCount
-				commentInfo.User.IsFollow = &followInfo.IsFollow
+				user.Avatar = &userInfo.Avatar
+				user.BackgroundImage = &url
+				user.FollowCount = &followInfo.FollowCount
+				user.FollowerCount = &followInfo.FollowerCount
+				user.IsFollow = &followInfo.IsFollow
+				commentInfo.User = &user
 				commentInfos = append(commentInfos, &commentInfo)
 			}
 		} else {
@@ -354,6 +353,9 @@ func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentL
 				commentInfo.CreateDate = &format
 				commentInfo.User.Id = &userInfo.UserId
 				commentInfo.User.Name = &userInfo.Name
+				commentInfo.User.Avatar = &userInfo.Avatar
+				url := consts.BackgroundImgUrl
+				commentInfo.User.BackgroundImage = &url
 				commentInfo.User.FollowCount = &followInfo.FollowCount
 				commentInfo.User.FollowerCount = &followInfo.FollowerCount
 				commentInfo.User.IsFollow = &followInfo.IsFollow

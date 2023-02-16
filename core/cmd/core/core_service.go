@@ -19,7 +19,6 @@ func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp
 	var (
 		videos     []model.Video
 		videoInfos []*service.Video
-		author     service.User
 		lastTime   int64
 		userId     int64
 	)
@@ -36,6 +35,7 @@ func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp
 	// 获取视频列表及时间戳
 	videos, lastTime = db.FeedVideos(timeTime)
 	for i := 0; i < len(videos); i++ {
+		var author service.User
 		// 视频信息
 		var videoInfo service.Video
 		videoInfo.Id = &videos[i].VideoId
@@ -58,7 +58,7 @@ func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp
 		author.BackgroundImage = &url
 		followInfo := db.GetUserFollowInfo(authId, userId)
 		author.IsFollow = &followInfo.IsFollow
-		author.FollowCount = &followInfo.FollowerCount
+		author.FollowCount = &followInfo.FollowCount
 		author.FollowerCount = &followInfo.FollowerCount
 		videoInfo.Author = &author
 		// 合并到全部所需信息
@@ -106,6 +106,7 @@ func (*CoreService) User(_ context.Context, req *service.DouyinUserRequest, resp
 	// 查看他人信息时userId为抖音使用者id checkUserId为发视频作者id
 	checkUserId := req.GetUserId()
 	userId := utils.GetUserId(req.GetToken())
+
 	// 获取用户信息
 	if exist := db.CheckUserIdExist(checkUserId); exist {
 		checkUserInfo := db.GetUserInfoById(checkUserId)
@@ -156,7 +157,6 @@ func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishLis
 	author.IsFollow = &followInfo.IsFollow
 	author.FollowCount = &followInfo.FollowerCount
 	author.FollowerCount = &followInfo.FollowerCount
-
 	// 获取指定作者id 查询自己时userId == checkId
 	videos := db.GetVideosByUserId(checkId)
 	for i := 0; i < len(videos); i++ {

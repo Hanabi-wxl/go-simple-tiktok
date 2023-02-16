@@ -212,10 +212,10 @@ func CheckUserExist(userId int64) bool {
 // @param from_user_id 消息发送方id
 // @param to_user_id 消息接收方id
 // @param content 消息内容
-func SendMessage(from_user_id, to_user_id int64, content string) {
+func SendMessage(fromId, toId int64, content string) {
 	var message model.Message
-	message.FromUserId = from_user_id
-	message.ToUserId = to_user_id
+	message.FromUserId = fromId
+	message.ToUserId = toId
 	message.Content = content
 	message.SenderRead = 1
 	if err := DB.Create(&message).Error; err != nil {

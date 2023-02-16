@@ -12,11 +12,13 @@ message Comment {
 message User {
   required int64 id = 1; // 用户id
   required string name = 2; // 用户名称
-  required string avatar = 3; // 头像
-  required string background_image = 4; // 背景图
+  optional string avatar = 3; // 头像
+  optional string background_image = 4; // 背景图
   optional int64 follow_count = 5; // 关注总数
   optional int64 follower_count = 6; // 粉丝总数
-  required bool is_follow = 7; // true-已关注，false-未关注
+  optional int64 work_count = 7; // 发布数量
+  optional int64 favorite_count = 8; // 喜欢总数
+  required bool is_follow = 9; // true-已关注，false-未关注
 }
 
 message Video {
