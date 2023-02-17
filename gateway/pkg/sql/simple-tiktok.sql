@@ -26,7 +26,7 @@ CREATE TABLE `comment` (
                            `comment_time` timestamp NULL DEFAULT NULL,
                            `is_deleted` tinyint DEFAULT '0',
                            PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `favorite` */
 
@@ -38,7 +38,7 @@ CREATE TABLE `favorite` (
                             `video_id` int NOT NULL,
                             `is_deleted` tinyint DEFAULT '0',
                             PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `follow` */
 
@@ -50,7 +50,7 @@ CREATE TABLE `follow` (
                           `follow_id` int NOT NULL,
                           `is_deleted` tinyint DEFAULT '0',
                           PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `message` */
 
@@ -93,7 +93,7 @@ CREATE TABLE `video` (
                          `upload_time` datetime DEFAULT NULL,
                          PRIMARY KEY (`video_id`),
                          UNIQUE KEY `video_id` (`video_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

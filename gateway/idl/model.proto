@@ -16,13 +16,15 @@ message Video {
 message User {
   required int64 id = 1; // 用户id
   required string name = 2; // 用户名称
-  optional string avatar = 3; // 头像
-  optional string background_image = 4; // 背景图
-  optional int64 follow_count = 5; // 关注总数
-  optional int64 follower_count = 6; // 粉丝总数
-  optional int64 work_count = 7; // 发布数量
-  optional int64 favorite_count = 8; // 喜欢总数
-  required bool is_follow = 9; // true-已关注，false-未关注
+  optional int64 follow_count = 3; // 关注总数
+  optional int64 follower_count = 4; // 粉丝总数
+  required bool is_follow = 5; // true-已关注，false-未关注
+  optional string avatar = 6; //用户头像
+  optional string background_image = 7; //用户个人页顶部大图
+  optional string signature = 8; //个人简介
+  optional int64 total_favorited = 9; //获赞数量
+  optional int64 work_count = 10; //作品数量
+  optional int64 favorite_count = 11; //点赞数量
 }
 
 message Comment {
@@ -46,7 +48,12 @@ message FriendUser {
   optional int64 follow_count = 3; // 关注总数
   optional int64 follower_count = 4; // 粉丝总数
   required bool is_follow = 5; // true-已关注，false-未关注
-  optional string message = 6; // 和该好友的最新聊天消息
-  required int64 msgType = 7; // message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
-  required string avatar = 8; // 头像
+  optional string avatar = 6; //用户头像
+  optional string background_image = 7; //用户个人页顶部大图
+  optional string signature = 8; //个人简介
+  optional int64 total_favorited = 9; //获赞数量
+  optional int64 work_count = 10; //作品数量
+  optional int64 favorite_count = 11; //点赞数量
+  optional string message = 12; // 和该好友的最新聊天消息
+  required int64 msgType = 13; // message消息的类型，0 => 当前请求用户接收的消息， 1 => 当前请求用户发送的消息
 }

@@ -1,0 +1,1 @@
+cd $PWD/action && ./action-run.sh;cd ../core && ./core-run.sh;cd ../gateway && ./gateway-run.sh;cd ../relation && ./relation-run.sh;

@@ -40,9 +40,13 @@ func CheckUserIdExist(id int64) bool {
 // @param username 用户名
 // @param password 密码
 func CreateUser(username, password, avatar string) {
-	var user model.User
-	user.Name = username
-	user.Avatar = avatar
+	user := model.User{
+		Name:      username,
+		Password:  password,
+		Avatar:    avatar,
+		Signature: "这人太懒了什么也没写",
+	}
+
 	// 生成加密密码
 	_ = user.SetPassword(password)
 	if err := DB.Create(&user).Error; err != nil {
@@ -66,11 +70,12 @@ func GetUserInfoByUsername(username string) (user model.User) {
 // @Description: 创建视频文件信息
 // @auth sinre 2023-02-09 16:43:40
 // @param video 视频信息
-func CreateFileInfo(video model.Video) {
+func CreateFileInfo(video model.Video) model.Video {
 	video.UploadTime = time.Now()
 	if err := DB.Create(&video).Error; err != nil {
 		panic(errno.DbInsertErr)
 	}
+	return video
 }
 
 // GetUserInfoById
@@ -191,4 +196,32 @@ func GetVideosByUserId(checkId int64) (videos []model.Video) {
 		panic(errno.DbSelectErr)
 	}
 	return videos
+}
+
+func GetStarUserById(vid int64) (favorites []model.Favorite) {
+	if err := DB.Where("video_id = ?", vid).Find(&favorites).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return favorites
+}
+
+func GetFavoriteListByUserId(checkId int64) (favorites []model.Favorite) {
+	if err := DB.Where("user_id = ?", checkId).Find(&favorites).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return favorites
+}
+
+func GetVideoInfoById(id int64) (videoInfo model.Video) {
+	if err := DB.Find(&videoInfo, id).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return videoInfo
+}
+
+func GetCommentList(vid int64) (comments []model.Comment) {
+	if err := DB.Where("video_id = ?", vid).Find(&comments).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return comments
 }

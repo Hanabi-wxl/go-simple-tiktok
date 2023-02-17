@@ -10,5 +10,6 @@ var (
 	VideoNotExist      = errors.New("视频不存在")
 	UserNotExistErr    = errors.New("用户不存在")
 	CommentNotExistErr = errors.New("评论不存在")
+	CommentDelErr      = errors.New("删除评论失败")
 	RepeatStar         = errors.New("重复点赞")
 )

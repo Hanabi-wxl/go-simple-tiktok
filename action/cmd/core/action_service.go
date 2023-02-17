@@ -218,10 +218,10 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 				svid := strconv.Itoa(int(videos[i].VideoId))
 				stars := redis.GetUserIdsInStars(svid)
 				comments := redis.GetCommentIdsInComments(svid)
-				fc := int64(len(stars))
-				cc := int64(len(comments))
-				videoInfo.FavoriteCount = &fc
-				videoInfo.CommentCount = &cc
+				favCount := int64(len(stars))
+				comCount := int64(len(comments))
+				videoInfo.FavoriteCount = &favCount
+				videoInfo.CommentCount = &comCount
 				checkFavorite := db.CheckFavorite(userId, authId)
 				videoInfo.IsFavorite = &checkFavorite
 				// 作者信息
@@ -271,8 +271,13 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 			pack.BuildCommentActionResp(resp, &comment, &userInfo, followInfo)
 		} else if acType == 2 {
 			if existc := db.CheckCommentExist(commentId); existc {
-				// 判断是否存在key: videoId
+				// 判断是否有权删除评论
+				if userId != db.GetCommentById(commentId).UserId {
+					return errno.CommentDelErr
+				}
+				// mq信息序列化
 				body, _ := json.Marshal(&model.MQComment{CommentId: commentId})
+				// 判断是否存在key: videoIds
 				if exist1 := redis.CheckVideoIdInComments(svid); exist1 {
 					redis.RemoveCommentIdInComments(svid, commentId)
 					mq.CommentDelQue.Publish(body)

@@ -1,0 +1,1 @@
+nohup ./gateway >> $PWD/output.log 2>&1 &

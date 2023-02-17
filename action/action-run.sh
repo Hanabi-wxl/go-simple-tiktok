@@ -1,0 +1,1 @@
+nohup ./action >> $PWD/output.log 2>&1 &

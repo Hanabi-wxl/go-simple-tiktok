@@ -14,10 +14,10 @@
 ```
 .
 ├─action 互动模块
-│  ├─cmd 类似java src文件夹
+│  ├─cmd 组织模块文件夹
 │  │  ├─core 实现类
 │  │  ├─dal 数据库操作
-│  │  │  └─db 类似java mapper持久层
+│  │  │  └─db 持久层
 │  │  │  └─redis redis操作
 │  │  ├─model 数据库实体对象
 │  │  ├─mq 消息队列
@@ -43,7 +43,7 @@
 │      └─utils
 ├─gateway 网关 （gin）
 │  ├─lib 二进制可执行文件
-│  ├─biz  类似java src文件夹
+│  ├─biz 业务逻辑层
 │  │  ├─handler 接口处理函数
 │  │  ├─router 总路由
 │  │  │  ├─action 路由、中间件
@@ -60,6 +60,8 @@
 │  │  ├─sql 数据库结构文件
 │  │  └─utils 工具包
 │  └─static 静态资源文件
+│      ├─avatar 头像及背景
+│      └─video 视频及封面
 └─relation 社交模块
   ├─cmd
   │  ├─core
@@ -75,25 +77,39 @@
      └─utils
 ```
 
-### 项目架构图
-
-![image-20230210021530831](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/image-20230210021530831.png)
-
 ### 技术点
 
 - web: gin
 - rpc: go-micro(v2), protobuf, etcd
 - 数据库: mysql
 - 持久层: gorm
+- 缓存: redis
 - 认证: JWT
+- 消息队列：rabbitMQ
 - 参数校验: protoc-gen-validate
 - 视频文件操作: ffmpeg
 
+### 项目架构图
+
+![image-20230217194153314](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/image-20230217194153314.png)
 
 ### 数据库结构
 
-![img](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/img.png)
+![image-20230217194355974](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/image-20230217194355974.png)
 
+### 缓存架构
+
+![image-20230217194506646](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/image-20230217194506646.png)
+
+### 消息队列架构
+
+![image-20230217194548593](https://sinre.oss-cn-beijing.aliyuncs.com/picgo/image-20230217194548593.png)
+
+### 项目运行
+1. 执行`docker-run.sh`
+2. 根据docker编写配置文件
+3. 执行`makeup.sh`
+4. 执行`project-run.sh`
 
 ### Sample
 

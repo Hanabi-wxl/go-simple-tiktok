@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"core/cmd/dal/db"
+	"core/cmd/dal/redis"
 	"core/cmd/model"
 	"core/cmd/pack"
 	"core/cmd/service"
@@ -12,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -44,16 +46,21 @@ func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp
 		videoInfo.CoverUrl = &videos[i].CoverUrl
 		authId := videos[i].Author
 		// 点赞评论信息
-		actionInfo := db.GetActionCount(videos[i].VideoId)
-		videoInfo.FavoriteCount = &actionInfo.FavoriteCount
-		videoInfo.CommentCount = &actionInfo.CommentCount
+		favCount, comCount := getActionInfo(videos[i].VideoId)
+		videoInfo.FavoriteCount = &favCount
+		videoInfo.CommentCount = &comCount
 		checkFavorite := db.CheckFavorite(userId, videos[i].VideoId)
 		videoInfo.IsFavorite = &checkFavorite
 		// 作者信息
 		infoById := db.GetUserInfoById(authId)
+		totalFav, workCount, starCount := getUserCountInfo(authId)
 		author.Name = &infoById.Name
 		author.Id = &authId
 		author.Avatar = &infoById.Avatar
+		author.Signature = &infoById.Signature
+		author.TotalFavorited = &totalFav
+		author.WorkCount = &workCount
+		author.FavoriteCount = &starCount
 		url := consts.BackgroundImgUrl
 		author.BackgroundImage = &url
 		followInfo := db.GetUserFollowInfo(authId, userId)
@@ -107,11 +114,27 @@ func (*CoreService) User(_ context.Context, req *service.DouyinUserRequest, resp
 	checkUserId := req.GetUserId()
 	userId := utils.GetUserId(req.GetToken())
 
+	totalFav, workCount, starCount := getUserCountInfo(checkUserId)
+
 	// 获取用户信息
 	if exist := db.CheckUserIdExist(checkUserId); exist {
 		checkUserInfo := db.GetUserInfoById(checkUserId)
 		followInfo := db.GetUserFollowInfo(checkUserId, userId)
-		pack.BuildUserResp(resp, &checkUserInfo, followInfo)
+		url := consts.BackgroundImgUrl
+		user := service.User{
+			Id:              &checkUserInfo.UserId,
+			Name:            &checkUserInfo.Name,
+			Avatar:          &checkUserInfo.Avatar,
+			Signature:       &checkUserInfo.Signature,
+			WorkCount:       &workCount,
+			FavoriteCount:   &starCount,
+			TotalFavorited:  &totalFav,
+			BackgroundImage: &url,
+			FollowCount:     &followInfo.FollowCount,
+			FollowerCount:   &followInfo.FollowerCount,
+			IsFollow:        &followInfo.IsFollow,
+		}
+		pack.BuildUserResp(resp, &user)
 	} else {
 		return errno.UserNotExistErr
 	}
@@ -127,7 +150,20 @@ func (*CoreService) PublishAction(_ context.Context, req *service.DouyinPublishA
 	video.PlayUrl = fileInfo.GetPlayUrl()
 	video.CoverUrl = fileInfo.GetCoverUrl()
 	video.Title = req.GetTitle()
-	db.CreateFileInfo(video)
+	info := db.CreateFileInfo(video)
+	suid := strconv.Itoa(int(info.Author))
+	if inWorks := redis.CheckUserIdExistInWorks(suid); inWorks {
+		redis.AddVideoIdInWorks(suid, info.VideoId)
+	} else {
+		redis.CreateUserIdInWorks(suid)
+		redis.AddExpireInWorks(suid)
+		videos := db.GetVideosByUserId(info.Author)
+		for i := 0; i < len(videos); i++ {
+			if ok := redis.AddVideoIdInWorks(suid, videos[i].VideoId); !ok {
+				redis.DeleteUserIdInWorks(suid)
+			}
+		}
+	}
 	pack.BuildPublishActionResp(resp)
 	return nil
 }
@@ -135,18 +171,27 @@ func (*CoreService) PublishAction(_ context.Context, req *service.DouyinPublishA
 func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishListRequest, resp *service.DouyinPublishListResponse) error {
 	var (
 		videosInfo []*service.Video
+		videos     []model.Video
+		videoIds   []int64
 		author     service.User
 		userId     int64
 	)
+
 	// 作者id
 	checkId := req.GetUserId()
+	suid := strconv.Itoa(int(checkId))
 	// 用户id
 	userId = utils.GetUserId(req.GetToken())
 	if exist := db.CheckUserIdExist(checkId); !exist {
 		return errno.UserNotExistErr
 	}
+
 	// 作者信息
 	infoById := db.GetUserInfoById(checkId)
+	totalFav, workCount, starCount := getUserCountInfo(checkId)
+	author.TotalFavorited = &totalFav
+	author.WorkCount = &workCount
+	author.FavoriteCount = &starCount
 	author.Name = &infoById.Name
 	url := consts.BackgroundImgUrl
 	author.BackgroundImage = &url
@@ -157,8 +202,12 @@ func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishLis
 	author.IsFollow = &followInfo.IsFollow
 	author.FollowCount = &followInfo.FollowerCount
 	author.FollowerCount = &followInfo.FollowerCount
-	// 获取指定作者id 查询自己时userId == checkId
-	videos := db.GetVideosByUserId(checkId)
+
+	videoIds = redis.GetVideoIdsInWorks(suid)
+	for _, id := range videoIds {
+		videoInfo := db.GetVideoInfoById(id)
+		videos = append(videos, videoInfo)
+	}
 	for i := 0; i < len(videos); i++ {
 		// 视频信息
 		var videoInfo service.Video
@@ -168,9 +217,9 @@ func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishLis
 		videoInfo.CoverUrl = &videos[i].CoverUrl
 		authId := videos[i].Author
 		// 点赞评论信息
-		actionInfo := db.GetActionCount(videos[i].VideoId)
-		videoInfo.FavoriteCount = &actionInfo.FavoriteCount
-		videoInfo.CommentCount = &actionInfo.CommentCount
+		favCount, comCount := getActionInfo(videos[i].VideoId)
+		videoInfo.FavoriteCount = &favCount
+		videoInfo.CommentCount = &comCount
 		checkFavorite := db.CheckFavorite(userId, authId)
 		videoInfo.IsFavorite = &checkFavorite
 		// 作者信息

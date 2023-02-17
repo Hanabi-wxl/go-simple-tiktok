@@ -1,0 +1,1 @@
+docker network create center_net && docker-compose up
