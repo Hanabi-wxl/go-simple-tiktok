@@ -2,7 +2,6 @@ package result
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 )
 
 // ServiceError
@@ -19,15 +18,6 @@ type ServiceError struct {
 type ClientError struct {
 	StatusCode int    `json:"status_code"`
 	StatusMsg  string `json:"status_msg"`
-}
-
-// NewError 自定义异常 弃用
-func NewError(code int, msg string) error {
-	jsonBytes, _ := json.Marshal(map[string]interface{}{
-		"status_code": code,
-		"status_msg":  msg,
-	})
-	return errors.New(string(jsonBytes))
 }
 
 // NewClientError 自定义客户端异常

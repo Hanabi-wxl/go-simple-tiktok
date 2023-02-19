@@ -39,7 +39,7 @@ func main() {
 
 	relationMicroService := micro.NewService(
 		micro.Name(consts.RelationClientName),
-		micro.WrapClient(wrappers.NewActionWrapper),
+		micro.WrapClient(wrappers.NewRelationWrapper),
 	)
 	relationService := service.NewRelationService(consts.RelationServiceName, relationMicroService.Client())
 

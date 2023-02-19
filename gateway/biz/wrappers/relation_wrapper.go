@@ -10,7 +10,7 @@ type relationWrapper struct {
 	client.Client
 }
 
-func (wrapper *relationWrapper) Call(ctx context.Context, req client.Request, resp interface{}, opts ...client.CallOption) error {
+func (wrapper *relationWrapper) Call(ctx context.Context, req client.Request, resp interface{}, _ ...client.CallOption) error {
 	cmdName := req.Service() + "." + req.Endpoint()
 	config := hystrix.CommandConfig{
 		Timeout:                30000,

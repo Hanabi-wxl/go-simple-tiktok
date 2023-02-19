@@ -25,7 +25,10 @@ CREATE TABLE `comment` (
                            `comment_text` text NOT NULL,
                            `comment_time` timestamp NULL DEFAULT NULL,
                            `is_deleted` tinyint DEFAULT '0',
-                           PRIMARY KEY (`id`)
+                           PRIMARY KEY (`id`),
+                           UNIQUE KEY `comment_id_uindex` (`id`),
+                           KEY `comment_video_id_index` (`user_id`),
+                           KEY `comment_video_id_index_2` (`video_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `favorite` */
@@ -37,8 +40,10 @@ CREATE TABLE `favorite` (
                             `user_id` int NOT NULL,
                             `video_id` int NOT NULL,
                             `is_deleted` tinyint DEFAULT '0',
-                            PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8;
+                            PRIMARY KEY (`id`),
+                            KEY `favorite_user_id_index` (`user_id`),
+                            KEY `favorite_video_id_index` (`video_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `follow` */
 
@@ -49,8 +54,10 @@ CREATE TABLE `follow` (
                           `follower_id` int NOT NULL,
                           `follow_id` int NOT NULL,
                           `is_deleted` tinyint DEFAULT '0',
-                          PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+                          PRIMARY KEY (`id`),
+                          KEY `follow_id_index` (`follow_id`),
+                          KEY `follower_id_index` (`follower_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `message` */
 
@@ -64,8 +71,10 @@ CREATE TABLE `message` (
                            `receiver_read` tinyint DEFAULT '0',
                            `sender_read` tinyint DEFAULT '0',
                            `send_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                           PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8;
+                           PRIMARY KEY (`id`),
+                           KEY `message_from_user_id_index` (`from_user_id`),
+                           KEY `message_to_user_id_index` (`to_user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `user` */
 
@@ -76,9 +85,10 @@ CREATE TABLE `user` (
                         `name` varchar(32) DEFAULT NULL,
                         `password` varchar(128) DEFAULT NULL,
                         `avatar` varchar(128) DEFAULT NULL,
+                        `signature` varchar(128) DEFAULT NULL,
                         PRIMARY KEY (`user_id`),
                         UNIQUE KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `video` */
 
@@ -92,8 +102,9 @@ CREATE TABLE `video` (
                          `cover_url` text,
                          `upload_time` datetime DEFAULT NULL,
                          PRIMARY KEY (`video_id`),
-                         UNIQUE KEY `video_id` (`video_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+                         UNIQUE KEY `video_id` (`video_id`),
+                         KEY `video_author_index` (`author`)
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

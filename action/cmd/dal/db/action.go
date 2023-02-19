@@ -151,30 +151,6 @@ func GetUserInfoById(id int64) (user model.User) {
 	return user
 }
 
-// GetActionCount 弃用
-// @Description: 获取点赞、评论数
-// @auth sinre 2023-02-09 16:32:07
-// @param id 视频id
-// @return model.ActionInfo 点赞评论等数据
-func GetActionCount(id int64) model.ActionInfo {
-	var (
-		favorite      model.Favorite
-		favoriteCount int64
-		comment       model.Comment
-		commentCount  int64
-	)
-	if err := DB.Model(&favorite).Where("video_id", id).Count(&favoriteCount).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	if err := DB.Model(&comment).Where("video_id", id).Count(&commentCount).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	return model.ActionInfo{
-		CommentCount:  commentCount,
-		FavoriteCount: favoriteCount,
-	}
-}
-
 // GetFavoriteListByUserId
 // @Description: 根据id获取点赞列表
 // @auth sinre 2023-02-09 16:32:48
@@ -185,18 +161,6 @@ func GetFavoriteListByUserId(checkId int64) (favorites []model.Favorite) {
 		panic(errno.DbSelectErr)
 	}
 	return favorites
-}
-
-// GetFavoriteVideos
-// @Description: 获取所有点赞的视频信息
-// @auth sinre 2023-02-09 16:33:27
-// @param vids 视频id
-// @return videos 视频信息
-func GetFavoriteVideos(vids []int64) (videos []model.Video) {
-	if err := DB.Where("video_id IN ?", vids).Find(&videos).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	return videos
 }
 
 // CreateComment
@@ -259,6 +223,7 @@ func GetCommentList(vid int64) (comments []model.Comment) {
 	return comments
 }
 
+// GetCommentById 根据id获取评论
 func GetCommentById(cid int64) (comment model.Comment) {
 	if err := DB.Where("id = ?", cid).Find(&comment).Error; err != nil {
 		panic(errno.DbSelectErr)
@@ -266,6 +231,7 @@ func GetCommentById(cid int64) (comment model.Comment) {
 	return comment
 }
 
+// GetVideoInfoById 根据id获取视频
 func GetVideoInfoById(id int64) (videoInfo model.Video) {
 	if err := DB.Find(&videoInfo, id).Error; err != nil {
 		panic(errno.DbSelectErr)

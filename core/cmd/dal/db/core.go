@@ -162,30 +162,6 @@ func CheckFavorite(userId, videoId int64) bool {
 	return true
 }
 
-// GetActionCount
-// @Description: 获取互动数据 如点赞数、评论数
-// @auth sinre 2023-02-09 16:50:42
-// @param id 视频id
-// @return model.ActionInfo 互动数据
-func GetActionCount(id int64) model.ActionInfo {
-	var (
-		favorite      model.Favorite
-		favoriteCount int64
-		comment       model.Comment
-		commentCount  int64
-	)
-	if err := DB.Model(&favorite).Where("video_id", id).Count(&favoriteCount).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	if err := DB.Model(&comment).Where("video_id", id).Count(&commentCount).Error; err != nil {
-		panic(errno.DbSelectErr)
-	}
-	return model.ActionInfo{
-		CommentCount:  commentCount,
-		FavoriteCount: favoriteCount,
-	}
-}
-
 // GetVideosByUserId
 // @Description: 获取用户发布视频列表
 // @auth sinre 2023-02-09 16:51:11

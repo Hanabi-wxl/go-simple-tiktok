@@ -27,7 +27,7 @@ func CheckVideoIdInComments(vid string) bool {
 // @auth sinre 2023-02-11 15:03:29
 // @param vid 视频id
 func AddVideoIdInComments(vid string) {
-	if _, err := RdComments.RPush(rdContext, vid, consts.DefaultRedisValue).Result(); err != nil {
+	if _, err := RdComments.LPush(rdContext, vid, consts.DefaultRedisValue).Result(); err != nil {
 		log.Println(err.Error())
 	}
 }
@@ -49,7 +49,7 @@ func AddExpireInComments(vid string) {
 // @param cid 评论id
 // @return bool 添加成功
 func AddCommentIdInComments(svid string, cid int64) bool {
-	if _, err := RdComments.RPush(rdContext, svid, cid).Result(); err != nil {
+	if _, err := RdComments.LPush(rdContext, svid, cid).Result(); err != nil {
 		log.Println(err.Error())
 		return false
 	} else {

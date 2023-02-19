@@ -105,7 +105,7 @@ func getActionInfo(vid int64) (favCount, comCount int64) {
 		redis.AddExpireInComments(svid)
 		commentList := db.GetCommentList(vid)
 		for _, comm := range commentList {
-			if save := redis.AddCommentIdInComments(svid, comm.UserId); !save {
+			if save := redis.AddCommentIdInComments(svid, comm.Id); !save {
 				redis.DeleteVideoIdInComments(svid)
 			}
 		}

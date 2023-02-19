@@ -10,7 +10,7 @@ type actionWrapper struct {
 	client.Client
 }
 
-func (wrapper *actionWrapper) Call(ctx context.Context, req client.Request, resp interface{}, opts ...client.CallOption) error {
+func (wrapper *actionWrapper) Call(ctx context.Context, req client.Request, resp interface{}, _ ...client.CallOption) error {
 	cmdName := req.Service() + "." + req.Endpoint()
 	config := hystrix.CommandConfig{
 		Timeout:                30000,
