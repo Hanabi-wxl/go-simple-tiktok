@@ -3,7 +3,11 @@ package core
 import (
 	"core/cmd/dal/db"
 	"core/cmd/dal/redis"
+	"core/cmd/model"
+	"core/cmd/service"
+	"core/pkg/consts"
 	"strconv"
+	"sync"
 )
 
 type CoreService struct {
@@ -109,4 +113,62 @@ func getActionInfo(vid int64) (favCount, comCount int64) {
 	}
 
 	return favCount, comCount
+}
+
+func addToPublishList(index int, vid, userId int64, author *service.User, videosInfo *[]*service.Video, wg *sync.WaitGroup) {
+	defer wg.Done()
+	// 视频信息
+	var videoInfo service.Video
+	videoInfom := db.GetVideoInfoById(vid)
+	videoInfo.Id = &videoInfom.VideoId
+	videoInfo.Title = &videoInfom.Title
+	videoInfo.PlayUrl = &videoInfom.PlayUrl
+	videoInfo.CoverUrl = &videoInfom.CoverUrl
+	// 点赞评论信息
+	favCount, comCount := getActionInfo(videoInfom.VideoId)
+	videoInfo.FavoriteCount = &favCount
+	videoInfo.CommentCount = &comCount
+	checkFavorite := db.CheckFavorite(userId, vid)
+	videoInfo.IsFavorite = &checkFavorite
+	// 作者信息
+	videoInfo.Author = author
+	// 合并到全部所需信息
+	(*videosInfo)[index] = &videoInfo
+}
+
+func addToFeedVideo(index int, video model.Video, userId int64, videoInfos *[]*service.Video, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var author service.User
+	// 视频信息
+	var videoInfo service.Video
+	videoInfo.Id = &video.VideoId
+	videoInfo.Title = &video.Title
+	videoInfo.PlayUrl = &video.PlayUrl
+	videoInfo.CoverUrl = &video.CoverUrl
+	authId := video.Author
+	// 点赞评论信息
+	favCount, comCount := getActionInfo(video.VideoId)
+	videoInfo.FavoriteCount = &favCount
+	videoInfo.CommentCount = &comCount
+	checkFavorite := db.CheckFavorite(userId, video.VideoId)
+	videoInfo.IsFavorite = &checkFavorite
+	// 作者信息
+	infoById := db.GetUserInfoById(authId)
+	totalFav, workCount, starCount := getUserCountInfo(authId)
+	author.Name = &infoById.Name
+	author.Id = &authId
+	author.Avatar = &infoById.Avatar
+	author.Signature = &infoById.Signature
+	author.TotalFavorited = &totalFav
+	author.WorkCount = &workCount
+	author.FavoriteCount = &starCount
+	url := consts.BackgroundImgUrl
+	author.BackgroundImage = &url
+	followInfo := db.GetUserFollowInfo(authId, userId)
+	author.IsFollow = &followInfo.IsFollow
+	author.FollowCount = &followInfo.FollowCount
+	author.FollowerCount = &followInfo.FollowerCount
+	videoInfo.Author = &author
+	// 合并到全部所需信息
+	(*videoInfos)[index] = &videoInfo
 }

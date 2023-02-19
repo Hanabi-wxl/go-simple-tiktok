@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"core/pkg/consts"
+	"action/pkg/consts"
 	"log"
 	"strconv"
 )
@@ -30,10 +30,23 @@ func CheckVideoIdExistInStars(svid string) bool {
 // @param svid 视频id
 // @param suid 用户id
 func AddUserIdInStars(svid string, suid int64) bool {
-	if _, err := RdStars.LPush(rdContext, svid, suid).Result(); err != nil {
+	RdStars.LRem(rdContext, svid, 1, suid)
+	if _, err := RdStars.RPush(rdContext, svid, suid).Result(); err != nil {
 		log.Println(err.Error())
 	}
 	return true
+}
+
+// RemoveUserIdInStars
+// @Description: 删除点赞的用户
+// @auth sinre 2023-02-11 00:02:30
+// @param ctx 上下文
+// @param svid 视频id
+// @param suid 用户id
+func RemoveUserIdInStars(svid string, suid int64) {
+	if _, err := RdStars.LRem(rdContext, svid, 1, suid).Result(); err != nil {
+		log.Println(err.Error())
+	}
 }
 
 // CreateVideoIdInStars
@@ -42,7 +55,7 @@ func AddUserIdInStars(svid string, suid int64) bool {
 // @param ctx 上下文
 // @param svid 视频id
 func CreateVideoIdInStars(svid string) {
-	if _, err := RdStars.LPush(rdContext, svid, consts.DefaultRedisValue).Result(); err != nil {
+	if _, err := RdStars.RPush(rdContext, svid, consts.DefaultRedisValue).Result(); err != nil {
 		log.Println(err.Error())
 	}
 }

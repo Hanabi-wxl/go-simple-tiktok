@@ -31,6 +31,6 @@ func Init() {
 	RdComments = redis.NewClient(&redis.Options{
 		Addr:     consts.RedisHost,
 		Password: consts.RedisPassword,
-		DB:       2,
+		DB:       3,
 	})
 }

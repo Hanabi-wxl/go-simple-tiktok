@@ -11,8 +11,8 @@ const (
 	//FfmpegPath          = "/bin/ffmpeg"
 
 	ETCDAddr     = "127.0.0.1:2379"
-	GateWayAddr  = "192.168.1.8:8000"
-	VideoFileUrl = "http://192.168.1.8:8000/static/video/"
+	GateWayAddr  = "192.168.1.9:8000"
+	VideoFileUrl = "http://192.168.1.9:8000/static/video/"
 	FfmpegPath   = "/bin/ffmpeg.exe"
 
 	CoreClientName      = "coreService.client"

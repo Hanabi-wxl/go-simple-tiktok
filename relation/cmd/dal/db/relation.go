@@ -213,11 +213,13 @@ func CheckUserExist(userId int64) bool {
 // @param to_user_id 消息接收方id
 // @param content 消息内容
 func SendMessage(fromId, toId int64, content string) {
-	var message model.Message
-	message.FromUserId = fromId
-	message.ToUserId = toId
-	message.Content = content
-	message.SenderRead = 1
+	message := model.Message{
+		FromUserId:   fromId,
+		ToUserId:     toId,
+		Content:      content,
+		SenderRead:   1,
+		ReceiverRead: 0,
+	}
 	if err := DB.Create(&message).Error; err != nil {
 		panic(errno.DbInsertErr)
 	}

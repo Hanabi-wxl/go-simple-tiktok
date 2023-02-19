@@ -5,9 +5,9 @@ import (
 	"relation/cmd/dal/db"
 	"relation/cmd/pack"
 	"relation/cmd/service"
-	"relation/pkg/consts"
 	"relation/pkg/errno"
 	"relation/pkg/utils"
+	"sync"
 )
 
 func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRelationActionRequest, resp *service.DouyinRelationActionResponse) error {
@@ -39,7 +39,6 @@ func (*RelationService) RelationAction(_ context.Context, req *service.DouyinRel
 }
 
 func (*RelationService) FollowList(_ context.Context, req *service.DouyinRelationFollowListRequest, resp *service.DouyinRelationFollowListResponse) error {
-	var userList []*service.User
 	// 获取当前登录用户的 id
 	userId := utils.GetUserId(req.GetToken())
 	checkId := req.GetUserId()
@@ -48,27 +47,19 @@ func (*RelationService) FollowList(_ context.Context, req *service.DouyinRelatio
 	}
 	// 返回用户的关注列表（id)
 	followIdList := db.GetFollowUserIdList(checkId)
-	for _, fid := range followIdList {
-		var su service.User
-		ub := db.GetUserInfoById(fid)
-		uf := db.GetUserFollowInfo(fid, userId)
-		su.Id = &ub.UserId
-		su.Name = &ub.Name
-		su.Avatar = &ub.Avatar
-		url := consts.BackgroundImgUrl
-		su.BackgroundImage = &url
-		su.FollowCount = &uf.FollowCount
-		su.FollowerCount = &uf.FollowerCount
-		su.IsFollow = &uf.IsFollow
-		userList = append(userList, &su)
+	followLen := len(followIdList)
+	var wg sync.WaitGroup
+	wg.Add(followLen)
+	userList := make([]*service.User, followLen)
+	for index, fid := range followIdList {
+		go addToFollowList(index, fid, userId, &userList, &wg)
 	}
+	wg.Wait()
 	pack.BuildFollowListResp(resp, userList)
 	return nil
 }
 
 func (*RelationService) FollowerList(_ context.Context, req *service.DouyinRelationFollowerListRequest, resp *service.DouyinRelationFollowerListResponse) error {
-	var authorInfo service.User
-	var authorInfos []*service.User
 	var userId int64
 	claims, _ := utils.ParseToken(req.GetToken())
 	// 未登录可查看他人粉丝 默认用户Id为0
@@ -81,47 +72,33 @@ func (*RelationService) FollowerList(_ context.Context, req *service.DouyinRelat
 	}
 	// 获取粉丝
 	followers := db.GetFollowerList(checkId)
-	for _, follower := range followers {
-		userinfo := db.GetUserInfoById(follower.FollowerId)
-		followerInfo := db.GetUserFollowInfo(follower.FollowerId, userId)
-		authorInfo.Id = &userinfo.UserId
-		authorInfo.Name = &userinfo.Name
-		authorInfo.Avatar = &userinfo.Avatar
-		url := consts.BackgroundImgUrl
-		authorInfo.BackgroundImage = &url
-		authorInfo.FollowCount = &followerInfo.FollowCount
-		authorInfo.FollowerCount = &followerInfo.FollowerCount
-		authorInfo.IsFollow = &followerInfo.IsFollow
-		authorInfos = append(authorInfos, &authorInfo)
+	ferLen := len(followers)
+	var wg sync.WaitGroup
+	wg.Add(ferLen)
+	authorInfos := make([]*service.User, ferLen)
+	for i := 0; i < len(followers); i++ {
+		go addToFollowerList(i, userId, &followers[i], &authorInfos, &wg)
 	}
+	wg.Wait()
 	pack.BuildRelationFollowerListResp(resp, authorInfos)
 	return nil
 }
 
 func (*RelationService) FriendList(_ context.Context, req *service.DouyinRelationFriendListRequest, resp *service.DouyinRelationFriendListResponse) error {
-	var friendInfos []*service.FriendUser
 	userId := req.GetUserId()
 	if !db.CheckUserIdExist(userId) {
 		return errno.UserNotExistErr
 	}
 	// 朋友为筛选后的用户的粉丝
 	friendList := db.GetFollowerFriendList(userId)
+	friendLen := len(friendList)
+	var wg sync.WaitGroup
+	wg.Add(friendLen)
+	friendInfos := make([]*service.FriendUser, friendLen)
 	for i := 0; i < len(friendList); i++ {
-		var friendInfo service.FriendUser
-		userinfo := db.GetUserInfoById(friendList[i].FollowerId)
-		followerInfo := db.GetUserFollowInfo(friendList[i].FollowerId, userId)
-		message := db.GetLastMessage(friendList[i].FollowerId, userId)
-		messageType := message.CheckMessageType(userId)
-		friendInfo.Id = &userinfo.UserId
-		friendInfo.Name = &userinfo.Name
-		friendInfo.Message = &message.Content
-		friendInfo.Avatar = &userinfo.Avatar
-		friendInfo.MsgType = &messageType
-		friendInfo.FollowCount = &followerInfo.FollowCount
-		friendInfo.FollowerCount = &followerInfo.FollowerCount
-		friendInfo.IsFollow = &followerInfo.IsFollow
-		friendInfos = append(friendInfos, &friendInfo)
+		go addToFriendList(i, friendList[i], userId, &friendInfos, &wg)
 	}
+	wg.Wait()
 	pack.BuildFriendListResp(resp, friendInfos)
 	return nil
 }

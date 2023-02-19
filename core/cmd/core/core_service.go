@@ -14,15 +14,15 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"sync"
 	"time"
 )
 
 func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp *service.DouyinFeedResponse) error {
 	var (
-		videos     []model.Video
-		videoInfos []*service.Video
-		lastTime   int64
-		userId     int64
+		videos   []model.Video
+		lastTime int64
+		userId   int64
 	)
 	// 时间戳
 	lastTime = req.GetLatestTime()
@@ -36,41 +36,14 @@ func (*CoreService) Feed(_ context.Context, req *service.DouyinFeedRequest, resp
 	}
 	// 获取视频列表及时间戳
 	videos, lastTime = db.FeedVideos(timeTime)
+	videoLen := len(videos)
+	var wg sync.WaitGroup
+	wg.Add(videoLen)
+	videoInfos := make([]*service.Video, videoLen)
 	for i := 0; i < len(videos); i++ {
-		var author service.User
-		// 视频信息
-		var videoInfo service.Video
-		videoInfo.Id = &videos[i].VideoId
-		videoInfo.Title = &videos[i].Title
-		videoInfo.PlayUrl = &videos[i].PlayUrl
-		videoInfo.CoverUrl = &videos[i].CoverUrl
-		authId := videos[i].Author
-		// 点赞评论信息
-		favCount, comCount := getActionInfo(videos[i].VideoId)
-		videoInfo.FavoriteCount = &favCount
-		videoInfo.CommentCount = &comCount
-		checkFavorite := db.CheckFavorite(userId, videos[i].VideoId)
-		videoInfo.IsFavorite = &checkFavorite
-		// 作者信息
-		infoById := db.GetUserInfoById(authId)
-		totalFav, workCount, starCount := getUserCountInfo(authId)
-		author.Name = &infoById.Name
-		author.Id = &authId
-		author.Avatar = &infoById.Avatar
-		author.Signature = &infoById.Signature
-		author.TotalFavorited = &totalFav
-		author.WorkCount = &workCount
-		author.FavoriteCount = &starCount
-		url := consts.BackgroundImgUrl
-		author.BackgroundImage = &url
-		followInfo := db.GetUserFollowInfo(authId, userId)
-		author.IsFollow = &followInfo.IsFollow
-		author.FollowCount = &followInfo.FollowCount
-		author.FollowerCount = &followInfo.FollowerCount
-		videoInfo.Author = &author
-		// 合并到全部所需信息
-		videoInfos = append(videoInfos, &videoInfo)
+		go addToFeedVideo(i, videos[i], userId, &videoInfos, &wg)
 	}
+	wg.Wait()
 	pack.BuildFeedResp(resp, videoInfos, lastTime)
 	return nil
 }
@@ -170,13 +143,10 @@ func (*CoreService) PublishAction(_ context.Context, req *service.DouyinPublishA
 
 func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishListRequest, resp *service.DouyinPublishListResponse) error {
 	var (
-		videosInfo []*service.Video
-		videos     []model.Video
-		videoIds   []int64
-		author     service.User
-		userId     int64
+		videoIds []int64
+		author   service.User
+		userId   int64
 	)
-
 	// 作者id
 	checkId := req.GetUserId()
 	suid := strconv.Itoa(int(checkId))
@@ -202,31 +172,15 @@ func (*CoreService) PublishList(_ context.Context, req *service.DouyinPublishLis
 	author.IsFollow = &followInfo.IsFollow
 	author.FollowCount = &followInfo.FollowerCount
 	author.FollowerCount = &followInfo.FollowerCount
-
 	videoIds = redis.GetVideoIdsInWorks(suid)
-	for _, id := range videoIds {
-		videoInfo := db.GetVideoInfoById(id)
-		videos = append(videos, videoInfo)
+	videoLen := len(videoIds)
+	var wg sync.WaitGroup
+	wg.Add(videoLen)
+	videosInfo := make([]*service.Video, videoLen)
+	for i := 0; i < videoLen; i++ {
+		go addToPublishList(i, videoIds[i], userId, &author, &videosInfo, &wg)
 	}
-	for i := 0; i < len(videos); i++ {
-		// 视频信息
-		var videoInfo service.Video
-		videoInfo.Id = &videos[i].VideoId
-		videoInfo.Title = &videos[i].Title
-		videoInfo.PlayUrl = &videos[i].PlayUrl
-		videoInfo.CoverUrl = &videos[i].CoverUrl
-		authId := videos[i].Author
-		// 点赞评论信息
-		favCount, comCount := getActionInfo(videos[i].VideoId)
-		videoInfo.FavoriteCount = &favCount
-		videoInfo.CommentCount = &comCount
-		checkFavorite := db.CheckFavorite(userId, authId)
-		videoInfo.IsFavorite = &checkFavorite
-		// 作者信息
-		videoInfo.Author = &author
-		// 合并到全部所需信息
-		videosInfo = append(videosInfo, &videoInfo)
-	}
+	wg.Wait()
 	pack.BuildPublishListResp(resp, videosInfo)
 	return nil
 }

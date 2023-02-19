@@ -17,8 +17,8 @@ const (
 	RedisHost        = "127.0.0.1:6379"
 	VideoLimit       = 5
 	PassWordCost     = 12
-	AvatarFileUrl    = "http://192.168.1.8:8000/static/avatar/"
-	BackgroundImgUrl = "http://192.168.1.8:8000/static/avatar/back.jpg"
+	AvatarFileUrl    = "http://192.168.1.9:8000/static/avatar/"
+	BackgroundImgUrl = "http://192.168.1.9:8000/static/avatar/back.jpg"
 	RedisPassword    = "root"
 )
 

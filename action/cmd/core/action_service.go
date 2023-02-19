@@ -13,6 +13,7 @@ import (
 	"context"
 	"encoding/json"
 	"strconv"
+	"sync"
 )
 
 func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavoriteActionRequest, resp *service.DouyinFavoriteActionResponse) error {
@@ -132,11 +133,9 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 
 func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavoriteListRequest, resp *service.DouyinFavoriteListResponse) error {
 	var (
-		videos     []model.Video
-		videoInfos []*service.Video
-		author     service.User
-		userId     int64
-		fids       []int64
+		author service.User
+		userId int64
+		fids   []int64
 	)
 	token := req.GetToken()
 	checkId := req.GetUserId()
@@ -162,31 +161,6 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	if exist := redis.CheckUserIdExistInStar(scid); exist {
 		// 查询视频作者喜欢列表
 		fids = redis.GetVideoIdsInStar(scid)
-		// 查询视频信息
-		videos = db.GetFavoriteVideos(fids)
-		for i := 0; i < len(videos); i++ {
-			// 视频信息
-			var videoInfo service.Video
-			videoInfo.Id = &videos[i].VideoId
-			videoInfo.Title = &videos[i].Title
-			videoInfo.PlayUrl = &videos[i].PlayUrl
-			videoInfo.CoverUrl = &videos[i].CoverUrl
-			authId := videos[i].Author
-			// 点赞评论信息
-			svid := strconv.Itoa(int(videos[i].VideoId))
-			stars := redis.GetUserIdsInStars(svid)
-			comments := redis.GetCommentIdsInComments(svid)
-			fc := int64(len(stars))
-			cc := int64(len(comments))
-			videoInfo.FavoriteCount = &fc
-			videoInfo.CommentCount = &cc
-			checkFavorite := db.CheckFavorite(userId, authId)
-			videoInfo.IsFavorite = &checkFavorite
-			// 作者信息
-			videoInfo.Author = &author
-			// 合并到全部所需信息
-			videoInfos = append(videoInfos, &videoInfo)
-		}
 	} else {
 		// 不存在Key则新增Key
 		redis.CreateUserIdInStar(suid)
@@ -204,33 +178,17 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 			for i := 0; i < len(favoriteList); i++ {
 				fids = append(fids, favoriteList[i].VideoId)
 			}
-			// 查询视频信息
-			videos = db.GetFavoriteVideos(fids)
-			for i := 0; i < len(videos); i++ {
-				// 视频信息
-				var videoInfo service.Video
-				videoInfo.Id = &videos[i].VideoId
-				videoInfo.Title = &videos[i].Title
-				videoInfo.PlayUrl = &videos[i].PlayUrl
-				videoInfo.CoverUrl = &videos[i].CoverUrl
-				authId := videos[i].Author
-				// 点赞评论信息
-				svid := strconv.Itoa(int(videos[i].VideoId))
-				stars := redis.GetUserIdsInStars(svid)
-				comments := redis.GetCommentIdsInComments(svid)
-				favCount := int64(len(stars))
-				comCount := int64(len(comments))
-				videoInfo.FavoriteCount = &favCount
-				videoInfo.CommentCount = &comCount
-				checkFavorite := db.CheckFavorite(userId, authId)
-				videoInfo.IsFavorite = &checkFavorite
-				// 作者信息
-				videoInfo.Author = &author
-				// 合并到全部所需信息
-				videoInfos = append(videoInfos, &videoInfo)
-			}
 		}
 	}
+	favIdLen := len(fids)
+	var wg sync.WaitGroup
+	wg.Add(favIdLen)
+	videoInfos := make([]*service.Video, favIdLen)
+	for i, fid := range fids {
+		// 查询视频信息
+		go addToFavList(i, fid, userId, &author, &videoInfos, &wg)
+	}
+	wg.Wait()
 	pack.BuildFavoriteListResp(resp, videoInfos)
 	return nil
 }
@@ -306,70 +264,34 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 
 func (*ActionService) CommentList(_ context.Context, req *service.DouyinCommentListRequest, resp *service.DouyinCommentListResponse) error {
 	userId := utils.GetUserId(req.GetToken())
-	var (
-		commentInfos []*service.Comment
-	)
+	var ids []int64
 	videoId := req.GetVideoId()
 	svid := strconv.Itoa(int(videoId))
 	if vexist := db.CheckVideoExist(videoId); vexist {
 		if exist := redis.CheckVideoIdInComments(svid); exist {
-			ids := redis.GetCommentIdsInComments(svid)
-			for i := 0; i < len(ids); i++ {
-				var commentInfo service.Comment
-				var user service.User
-				comment := db.GetCommentById(ids[i])
-				// 用户信息
-				userInfo := db.GetUserInfoById(comment.UserId)
-				// 点赞评论信息
-				followInfo := db.GetUserFollowInfo(comment.UserId, userId)
-				commentInfo.Id = &comment.Id
-				commentInfo.Content = &comment.CommentText
-				format := comment.CommentTime.Format("01-02")
-				commentInfo.CreateDate = &format
-				user.Id = &userInfo.UserId
-				user.Name = &userInfo.Name
-				url := consts.BackgroundImgUrl
-				user.Avatar = &userInfo.Avatar
-				user.BackgroundImage = &url
-				user.FollowCount = &followInfo.FollowCount
-				user.FollowerCount = &followInfo.FollowerCount
-				user.IsFollow = &followInfo.IsFollow
-				commentInfo.User = &user
-				commentInfos = append(commentInfos, &commentInfo)
-			}
+			ids = redis.GetCommentIdsInComments(svid)
 		} else {
 			redis.AddVideoIdInComments(svid)
 			redis.AddExpireInComments(svid)
 			commentList := db.GetCommentList(videoId)
-			for i := 0; i < len(commentList); i++ {
-				var commentInfo service.Comment
-				var user service.User
-				commentInfo.User = &user
-				if save := redis.AddCommentIdInComments(svid, commentList[i].Id); !save {
+			for _, comment := range commentList {
+				if save := redis.AddCommentIdInComments(svid, comment.Id); !save {
 					redis.DeleteVideoIdInComments(svid)
 				}
-				// 用户信息
-				userInfo := db.GetUserInfoById(commentList[i].UserId)
-				// 点赞评论信息
-				followInfo := db.GetUserFollowInfo(commentList[i].UserId, userId)
-				commentInfo.Id = &commentList[i].Id
-				commentInfo.Content = &commentList[i].CommentText
-				format := commentList[i].CommentTime.Format("01-02")
-				commentInfo.CreateDate = &format
-				commentInfo.User.Id = &userInfo.UserId
-				commentInfo.User.Name = &userInfo.Name
-				commentInfo.User.Avatar = &userInfo.Avatar
-				url := consts.BackgroundImgUrl
-				commentInfo.User.BackgroundImage = &url
-				commentInfo.User.FollowCount = &followInfo.FollowCount
-				commentInfo.User.FollowerCount = &followInfo.FollowerCount
-				commentInfo.User.IsFollow = &followInfo.IsFollow
-				commentInfos = append(commentInfos, &commentInfo)
+				ids = append(ids, comment.Id)
 			}
 		}
+		var wg sync.WaitGroup
+		comIdLen := len(ids)
+		wg.Add(comIdLen)
+		commentInfos := make([]*service.Comment, comIdLen)
+		for i := 0; i < len(ids); i++ {
+			go addToCommentList(i, ids[i], userId, &commentInfos, &wg)
+		}
+		wg.Wait()
+		pack.BuildCommentListResp(resp, commentInfos)
 	} else {
 		return errno.VideoNotExist
 	}
-	pack.BuildCommentListResp(resp, commentInfos)
 	return nil
 }

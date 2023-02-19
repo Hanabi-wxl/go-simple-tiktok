@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"core/pkg/consts"
+	"action/pkg/consts"
 	"log"
 	"strconv"
 )
@@ -31,6 +31,7 @@ func CheckUserIdExistInStar(suid string) bool {
 // @param vid 视频id
 // @return bool 保存成功
 func AddVideoIdInStar(suid string, vid int64) bool {
+	RdStar.LRem(rdContext, suid, 1, vid)
 	if n, err := RdStar.LPush(rdContext, suid, vid).Result(); n > 0 {
 		if err != nil {
 			log.Println(err.Error())
@@ -39,6 +40,25 @@ func AddVideoIdInStar(suid string, vid int64) bool {
 		return true
 	}
 	return false
+}
+
+// RemoveVideoIdInStar
+// @Description: 删除点赞信息
+// @auth sinre 2023-02-10 23:55:40
+// @param ctx 上下文
+// @param uid 用户id
+// @param vid 视频id
+func RemoveVideoIdInStar(suid string, vid int64) bool {
+	if n, err := RdStar.LRem(rdContext, suid, 1, vid).Result(); n > 0 {
+		if err != nil {
+			log.Println(err.Error())
+			return false
+		} else {
+			return true
+		}
+	} else {
+		return false
+	}
 }
 
 // CreateUserIdInStar

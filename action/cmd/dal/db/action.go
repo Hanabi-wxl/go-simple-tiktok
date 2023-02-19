@@ -265,3 +265,10 @@ func GetCommentById(cid int64) (comment model.Comment) {
 	}
 	return comment
 }
+
+func GetVideoInfoById(id int64) (videoInfo model.Video) {
+	if err := DB.Find(&videoInfo, id).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return videoInfo
+}

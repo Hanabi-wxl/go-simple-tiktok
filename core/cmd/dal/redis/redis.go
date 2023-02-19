@@ -16,7 +16,7 @@ var RdComments *redis.Client
 func Init() {
 	// 点赞列表 - db0 - star
 	// 获赞数量 - db1 - stars
-	// 发布列表 - db3 - works
+	// 发布列表 - db2 - works
 
 	// 保存视频被哪些用户点赞 videoId: userId
 	RdStar = redis.NewClient(&redis.Options{
@@ -35,13 +35,13 @@ func Init() {
 	RdWorks = redis.NewClient(&redis.Options{
 		Addr:     consts.RedisHost,
 		Password: consts.RedisPassword,
-		DB:       3,
+		DB:       2,
 	})
 
 	// 保存视频的评论信息 videoId: commentId
 	RdComments = redis.NewClient(&redis.Options{
 		Addr:     consts.RedisHost,
 		Password: consts.RedisPassword,
-		DB:       2,
+		DB:       3,
 	})
 }
