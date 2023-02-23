@@ -48,6 +48,7 @@ type CoreService interface {
 	User(ctx context.Context, in *DouyinUserRequest, opts ...client.CallOption) (*DouyinUserResponse, error)
 	PublishAction(ctx context.Context, in *DouyinPublishActionRequest, opts ...client.CallOption) (*DouyinPublishActionResponse, error)
 	PublishList(ctx context.Context, in *DouyinPublishListRequest, opts ...client.CallOption) (*DouyinPublishListResponse, error)
+	GetUserListInfo(ctx context.Context, in *UserListInfoReq, opts ...client.CallOption) (*UserListInfoResp, error)
 }
 
 type coreService struct {
@@ -122,6 +123,16 @@ func (c *coreService) PublishList(ctx context.Context, in *DouyinPublishListRequ
 	return out, nil
 }
 
+func (c *coreService) GetUserListInfo(ctx context.Context, in *UserListInfoReq, opts ...client.CallOption) (*UserListInfoResp, error) {
+	req := c.c.NewRequest(c.name, "CoreService.getUserListInfo", in)
+	out := new(UserListInfoResp)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for CoreService service
 
 type CoreServiceHandler interface {
@@ -131,6 +142,7 @@ type CoreServiceHandler interface {
 	User(context.Context, *DouyinUserRequest, *DouyinUserResponse) error
 	PublishAction(context.Context, *DouyinPublishActionRequest, *DouyinPublishActionResponse) error
 	PublishList(context.Context, *DouyinPublishListRequest, *DouyinPublishListResponse) error
+	GetUserListInfo(context.Context, *UserListInfoReq, *UserListInfoResp) error
 }
 
 func RegisterCoreServiceHandler(s server.Server, hdlr CoreServiceHandler, opts ...server.HandlerOption) error {
@@ -141,6 +153,7 @@ func RegisterCoreServiceHandler(s server.Server, hdlr CoreServiceHandler, opts .
 		User(ctx context.Context, in *DouyinUserRequest, out *DouyinUserResponse) error
 		PublishAction(ctx context.Context, in *DouyinPublishActionRequest, out *DouyinPublishActionResponse) error
 		PublishList(ctx context.Context, in *DouyinPublishListRequest, out *DouyinPublishListResponse) error
+		GetUserListInfo(ctx context.Context, in *UserListInfoReq, out *UserListInfoResp) error
 	}
 	type CoreService struct {
 		coreService
@@ -175,4 +188,8 @@ func (h *coreServiceHandler) PublishAction(ctx context.Context, in *DouyinPublis
 
 func (h *coreServiceHandler) PublishList(ctx context.Context, in *DouyinPublishListRequest, out *DouyinPublishListResponse) error {
 	return h.CoreServiceHandler.PublishList(ctx, in, out)
+}
+
+func (h *coreServiceHandler) GetUserListInfo(ctx context.Context, in *UserListInfoReq, out *UserListInfoResp) error {
+	return h.CoreServiceHandler.GetUserListInfo(ctx, in, out)
 }

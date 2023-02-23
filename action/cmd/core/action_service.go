@@ -7,7 +7,6 @@ import (
 	"action/cmd/mq"
 	"action/cmd/pack"
 	"action/cmd/service"
-	"action/pkg/consts"
 	"action/pkg/errno"
 	"action/pkg/utils"
 	"context"
@@ -132,11 +131,8 @@ func (*ActionService) FavoriteAction(_ context.Context, req *service.DouyinFavor
 }
 
 func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavoriteListRequest, resp *service.DouyinFavoriteListResponse) error {
-	var (
-		author service.User
-		userId int64
-		fids   []int64
-	)
+	var userId int64
+	var fids []int64
 	token := req.GetToken()
 	checkId := req.GetUserId()
 	if existUser := db.CheckUserIdExist(checkId); !existUser {
@@ -147,17 +143,10 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	scid := strconv.Itoa(int(checkId))
 	// 作者信息
 	infoById := db.GetUserInfoById(checkId)
-	author.Name = &infoById.Name
-	author.Id = &checkId
-	author.Avatar = &infoById.Avatar
 	// 查询自己时userId == checkId
 	followInfo := db.GetUserFollowInfo(checkId, userId)
-	author.IsFollow = &followInfo.IsFollow
-	url := consts.BackgroundImgUrl
-	author.BackgroundImage = &url
-	author.FollowCount = &followInfo.FollowerCount
-	author.FollowerCount = &followInfo.FollowerCount
-
+	totalFav, workCount, starCount := getUserCountInfo(userId)
+	author := pack.BuildAuthor(infoById, followInfo, checkId, totalFav, workCount, starCount)
 	if exist := redis.CheckUserIdExistInStar(scid); exist {
 		// 查询视频作者喜欢列表
 		fids = redis.GetVideoIdsInStar(scid)
@@ -186,7 +175,7 @@ func (*ActionService) FavoriteList(_ context.Context, req *service.DouyinFavorit
 	videoInfos := make([]*service.Video, favIdLen)
 	for i, fid := range fids {
 		// 查询视频信息
-		go addToFavList(i, fid, userId, &author, &videoInfos, &wg)
+		go addToFavList(i, fid, userId, author, &videoInfos, &wg)
 	}
 	wg.Wait()
 	pack.BuildFavoriteListResp(resp, videoInfos)
@@ -226,7 +215,9 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 			}
 			userInfo := db.GetUserInfoById(userId)
 			followInfo = db.GetUserFollowInfo(userId, userId)
-			pack.BuildCommentActionResp(resp, &comment, &userInfo, followInfo)
+			totalFav, workCount, starCount := getUserCountInfo(userId)
+			author := pack.BuildAuthor(userInfo, followInfo, userId, totalFav, workCount, starCount)
+			pack.BuildCommentActionResp(resp, &comment, author)
 		} else if acType == 2 {
 			if existc := db.CheckCommentExist(commentId); existc {
 				// 判断是否有权删除评论
@@ -251,7 +242,7 @@ func (*ActionService) CommentAction(_ context.Context, req *service.DouyinCommen
 					}
 					mq.CommentDelQue.Publish(body)
 				}
-				pack.BuildCommentActionResp(resp, nil, nil, followInfo)
+				pack.BuildCommentActionResp(resp, nil, nil)
 			} else {
 				return errno.CommentNotExistErr
 			}

@@ -5,6 +5,7 @@ import (
 	"gateway/biz/router/core"
 	"gateway/biz/router/relation"
 	"gateway/mw"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -20,5 +21,8 @@ func NewRouter(service ...interface{}) *gin.Engine {
 	action.Register(ginRouter)
 	core.Register(ginRouter)
 	relation.Register(ginRouter)
+
+	pprof.Register(ginRouter)
+
 	return ginRouter
 }

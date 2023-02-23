@@ -238,3 +238,10 @@ func GetVideoInfoById(id int64) (videoInfo model.Video) {
 	}
 	return videoInfo
 }
+
+func GetVideosByUserId(checkId int64) (videos []model.Video) {
+	if err := DB.Where("author = ?", checkId).Find(&videos).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return videos
+}

@@ -41,10 +41,11 @@ type Message struct {
 }
 
 type User struct {
-	UserId   int64  `gorm:"column:user_id;primaryKey" json:"user_id"`
-	Password string `gorm:"column:password" json:"password"`
-	Name     string `gorm:"column:name" json:"name"`
-	Avatar   string `gorm:"column:avatar" json:"avatar"`
+	UserId    int64  `gorm:"column:user_id;primaryKey" json:"user_id"`
+	Password  string `gorm:"column:password" json:"password"`
+	Name      string `gorm:"column:name" json:"name"`
+	Avatar    string `gorm:"column:avatar" json:"avatar"`
+	Signature string `gorm:"column:signature" json:"signature"`
 }
 
 type Video struct {

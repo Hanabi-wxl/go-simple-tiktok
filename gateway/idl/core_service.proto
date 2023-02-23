@@ -74,6 +74,16 @@ message douyin_user_register_response {
   required string token = 4; // 用户鉴权token
 }
 
+message user_list_info_req {
+  required int64 user_id = 1;
+}
+
+message user_list_info_resp {
+  required int64 total_favorited = 1;
+  required int64 work_count = 2;
+  required int64 favorite_count = 3;
+}
+
 service CoreService {
   rpc Feed(douyin_feed_request) returns(douyin_feed_response);
   rpc UserRegister(douyin_user_register_request) returns(douyin_user_register_response);
@@ -81,4 +91,5 @@ service CoreService {
   rpc User(douyin_user_request) returns(douyin_user_response);
   rpc PublishAction(douyin_publish_action_request) returns(douyin_publish_action_response);
   rpc PublishList(douyin_publish_list_request) returns(douyin_publish_list_response);
+  rpc getUserListInfo(user_list_info_req) returns(user_list_info_resp);
 }

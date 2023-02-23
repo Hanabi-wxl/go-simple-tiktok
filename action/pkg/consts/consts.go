@@ -12,6 +12,7 @@ const (
 
 	ETCDAddr          = "127.0.0.1:2379"
 	ActionServiceName = "rpcActionService"
+	CoreServiceName   = "rpcCoreService"
 	ActionServiceAddr = "127.0.0.1:8081"
 	MysqlDSN          = "root:@tcp(localhost:3306)/simple_tiktok?charset=utf8&parseTime=True&loc=Local"
 	BackgroundImgUrl  = "http://192.168.1.8:8000/static/avatar/back.jpg"

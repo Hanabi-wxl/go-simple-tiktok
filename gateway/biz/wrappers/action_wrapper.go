@@ -10,6 +10,10 @@ type actionWrapper struct {
 	client.Client
 }
 
+// ServiceDefaultMsg 降级处理
+func ServiceDefaultMsg(resp interface{}) {
+}
+
 func (wrapper *actionWrapper) Call(ctx context.Context, req client.Request, resp interface{}, _ ...client.CallOption) error {
 	cmdName := req.Service() + "." + req.Endpoint()
 	config := hystrix.CommandConfig{
@@ -22,6 +26,7 @@ func (wrapper *actionWrapper) Call(ctx context.Context, req client.Request, resp
 	return hystrix.Do(cmdName, func() error {
 		return wrapper.Client.Call(ctx, req, resp)
 	}, func(err error) error {
+		ServiceDefaultMsg(resp)
 		return err
 	})
 }

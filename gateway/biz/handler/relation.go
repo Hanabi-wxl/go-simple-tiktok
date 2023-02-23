@@ -192,5 +192,9 @@ func Chat(ginCtx *gin.Context) {
 		SendServiceErr(ginCtx, err)
 		return
 	}
+	if response.MessageList == nil {
+		SendMap(ginCtx, response, "message_list")
+		return
+	}
 	ginCtx.JSON(http.StatusOK, response)
 }

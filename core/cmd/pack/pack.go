@@ -49,3 +49,20 @@ func BuildPublishListResp(resp *service.DouyinPublishListResponse, infos []*serv
 	resp.StatusMsg = &consts.DefaultMsg
 	resp.VideoList = infos
 }
+
+func BuildAuthor(infoById model.User, followInfo model.FollowInfo, checkId, totalFav, workCount, starCount int64) *service.User {
+	var author service.User
+	author.Signature = &infoById.Signature
+	author.TotalFavorited = &totalFav
+	author.WorkCount = &workCount
+	author.FavoriteCount = &starCount
+	author.Name = &infoById.Name
+	url := consts.BackgroundImgUrl
+	author.BackgroundImage = &url
+	author.Id = &checkId
+	author.Avatar = &infoById.Avatar
+	author.IsFollow = &followInfo.IsFollow
+	author.FollowCount = &followInfo.FollowerCount
+	author.FollowerCount = &followInfo.FollowerCount
+	return &author
+}

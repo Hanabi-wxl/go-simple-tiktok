@@ -103,7 +103,7 @@ func GetLastMessage(fid, uid int64) (mes model.Message) {
 // CheckFollowExist 检查两人关注信息是否存在
 func CheckFollowExist(userId, toUserId int64) bool {
 	var fol model.Follow
-	if err := DB.Model(&fol).Where("follower_id = ? AND follow_id = ?", userId, toUserId).First(&fol).Error; err == gorm.ErrRecordNotFound {
+	if err := DB.Where("follower_id = ? AND follow_id = ?", userId, toUserId).First(&fol).Error; err == gorm.ErrRecordNotFound {
 		return false
 	}
 	return true
@@ -232,4 +232,24 @@ func GetChats(tuid, usid int64) (msgs model.Message) {
 		}
 	}
 	return msgs
+}
+
+func GetVideosByUserId(checkId int64) (videos []model.Video) {
+	if err := DB.Where("author = ?", checkId).Find(&videos).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return videos
+}
+
+func GetStarUserById(vid int64) (favorites []model.Favorite) {
+	if err := DB.Where("video_id = ?", vid).Find(&favorites).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return favorites
+}
+func GetFavoriteListByUserId(checkId int64) (favorites []model.Favorite) {
+	if err := DB.Where("user_id = ?", checkId).Find(&favorites).Error; err != nil {
+		panic(errno.DbSelectErr)
+	}
+	return favorites
 }
